@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solutions Consulting Cockpit</title>
+<style>
+/* ============================================================
+   Palette validated with dataviz/scripts/validate_palette.js
+   light ordinal ramp  #86b6ef #5598e7 #2a78d6 #1c5cab #104281  ALL PASS
+   dark  ordinal ramp  #184f95 #256abf #3987e5 #6da7ec #9ec5f4  ALL PASS
+   categorical pair    light #2a78d6/#eb6834 · dark #3987e5/#d95926  ALL PASS
+   ============================================================ */
+:root{
+  color-scheme:light;
+  --surface-1:#fcfcfb; --surface-2:#ffffff; --plane:#eeeeeb;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --shell:#0d366b; --shell-2:#104281; --shell-ink:#ffffff;
+  --series-1:#2a78d6; --series-2:#eb6834;
+  --ord-0:#e1e0d9;
+  --ord-1:#86b6ef; --ord-2:#5598e7; --ord-3:#2a78d6; --ord-4:#1c5cab; --ord-5:#104281;
+  --ink-on-1:#0b0b0b; --ink-on-2:#0b0b0b; --ink-on-3:#ffffff;
+  --ink-on-4:#ffffff; --ink-on-5:#ffffff; --ink-on-0:#52514e;
+  --track:#eef4fd;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --delta-good:#005800;
+  --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --surface-1:#1a1a19; --surface-2:#202020; --plane:#0d0d0d;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+  --shell:#081f3f; --shell-2:#0d366b;
+  --series-1:#3987e5; --series-2:#d95926;
+  --ord-0:#2c2c2a;
+  --ord-1:#184f95; --ord-2:#256abf; --ord-3:#3987e5; --ord-4:#6da7ec; --ord-5:#9ec5f4;
+  --ink-on-1:#ffffff; --ink-on-2:#ffffff; --ink-on-3:#0b0b0b;
+  --ink-on-4:#0b0b0b; --ink-on-5:#0b0b0b; --ink-on-0:#c3c2b7;
+  --track:#15233a; --delta-good:#0ca30c;
+}
+@media (prefers-color-scheme:dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme:dark;
+    --surface-1:#1a1a19; --surface-2:#202020; --plane:#0d0d0d;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --shell:#081f3f; --shell-2:#0d366b;
+    --series-1:#3987e5; --series-2:#d95926;
+    --ord-0:#2c2c2a;
+    --ord-1:#184f95; --ord-2:#256abf; --ord-3:#3987e5; --ord-4:#6da7ec; --ord-5:#9ec5f4;
+    --ink-on-1:#ffffff; --ink-on-2:#ffffff; --ink-on-3:#0b0b0b;
+    --ink-on-4:#0b0b0b; --ink-on-5:#0b0b0b; --ink-on-0:#c3c2b7;
+    --track:#15233a; --delta-good:#0ca30c;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:var(--font);background:var(--plane);color:var(--text-primary);
+  font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{margin:0;font-weight:650;letter-spacing:-.01em}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.mono{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.col{max-height:100%;min-height:0;overscroll-behavior:contain}
+.col::-webkit-scrollbar,.coach::-webkit-scrollbar{width:9px}
+.col::-webkit-scrollbar-thumb,.coach::-webkit-scrollbar-thumb{background:var(--axis);border-radius:5px}
+.col::-webkit-scrollbar-track{background:transparent}
+
+/* ---------------- title bar ---------------- */
+.titlebar{background:var(--shell);color:var(--shell-ink);display:flex;align-items:center;
+  gap:14px;padding:0 18px;height:50px;flex:0 0 auto}
+.titlebar b.brand{font-size:15px;font-weight:700;letter-spacing:.03em}
+.mockflag{font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 8px;opacity:.85}
+.tabs{display:flex;gap:2px;margin-left:auto;background:rgba(255,255,255,.1);
+  border-radius:999px;padding:3px}
+.tab{border:0;background:transparent;color:rgba(255,255,255,.72);padding:5px 15px;
+  border-radius:999px;font-size:12px;font-weight:600}
+.tab[aria-selected="true"]{background:var(--shell-ink);color:var(--shell)}
+.tbtn{background:rgba(255,255,255,.12);border:0;border-radius:8px;padding:0 10px;height:28px;
+  color:var(--shell-ink);font-size:11px;font-weight:600}
+.iconbtn{background:rgba(255,255,255,.12);border:0;border-radius:8px;width:28px;height:28px;
+  color:var(--shell-ink);display:grid;place-items:center;font-size:13px}
+
+.zone{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary);white-space:nowrap}
+.cadence{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:1px 7px}
+
+/* ---------------- visibility ---------------- */
+.kpibar{background:var(--surface-1);border-bottom:1px solid var(--border);
+  padding:9px 18px 12px;flex:0 0 auto}
+.kpibar .hdr{display:flex;align-items:center;gap:12px;margin-bottom:9px;flex-wrap:wrap}
+.kpibar .hdr .src{font-size:10.5px;color:var(--text-muted);margin-left:auto}
+.filt{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-secondary)}
+.filt select{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;
+  padding:2px 6px;font-size:11px}
+.kpigrid{display:grid;grid-template-columns:repeat(4,minmax(128px,1fr)) 1.55fr;gap:11px}
+.tile{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:8px 12px 9px;min-width:0}
+.tile .lbl{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .val{font-size:24px;font-weight:680;letter-spacing:-.02em;margin-top:1px;line-height:1.15}
+.tile .sub{font-size:10.5px;color:var(--text-secondary);margin-top:1px}
+.meters{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:8px 13px;display:flex;flex-direction:column;justify-content:center;gap:7px}
+.meterrow{display:grid;grid-template-columns:150px 1fr 116px;align-items:center;gap:10px}
+.meterrow .mlbl{font-size:10.5px;color:var(--text-secondary);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.meterrow .mlbl em{font-style:normal;color:var(--text-muted)}
+.bar{position:relative;height:9px;background:var(--track);border-radius:5px}
+.bar>span{position:absolute;left:0;top:0;bottom:0;background:var(--ord-3);
+  border-radius:0 4px 4px 0;min-width:4px}
+.bar>i.tgt{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text-secondary)}
+.meterrow .mval{font-size:10.5px;text-align:right;color:var(--text-secondary);white-space:nowrap}
+.meterrow .mval b{color:var(--text-primary);font-size:12.5px}
+
+/* ---------------- layout ---------------- */
+.main{display:grid;grid-template-columns:266px minmax(0,1fr) 320px;
+  grid-template-rows:minmax(0,1fr);gap:11px;
+  padding:11px 18px;flex:1 1 auto;min-height:0;align-items:start}
+.panel{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden}
+/* must come AFTER .panel: equal specificity, later wins. .panel's overflow:hidden
+   was silently killing the scroll on all three columns. */
+.panel.col{overflow-x:hidden;overflow-y:auto}
+.panel>header{padding:10px 12px 9px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.panel>header h3{font-size:13px}
+.panel>header .meta{font-size:10.5px;color:var(--text-muted);margin-left:auto}
+.body{padding:11px 12px}
+
+/* ---------------- schedule ---------------- */
+.daynav{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--border)}
+.daynav .d{font-size:12.5px;font-weight:650}
+.daynav .n{font-size:10px;color:var(--text-muted)}
+.daynav .sp{margin-left:auto;display:flex;gap:4px}
+.chev{border:1px solid var(--border);background:var(--surface-2);border-radius:6px;
+  width:22px;height:22px;display:grid;place-items:center;font-size:11px;color:var(--text-secondary)}
+.chev:disabled{opacity:.35;cursor:default}
+.calgrid{position:relative;padding:6px 8px 10px 0;margin-left:38px}
+.hourline{position:absolute;left:0;right:8px;border-top:1px solid var(--grid)}
+.hourlab{position:absolute;left:-36px;width:32px;text-align:right;font-size:9.5px;
+  color:var(--text-muted);transform:translateY(-5px)}
+.nowline{position:absolute;left:0;right:8px;height:2px;background:var(--critical);z-index:3}
+.nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;
+  border-radius:50%;background:var(--critical)}
+.calev{position:absolute;left:2px;right:10px;border-radius:7px;padding:4px 7px;
+  border:1px solid var(--border);border-left:3px solid var(--axis);background:var(--surface-2);
+  text-align:left;overflow:hidden;z-index:2;display:block}
+.calev:hover{border-color:var(--ord-3)}
+.calev[aria-current="true"]{outline:2px solid var(--ord-3);outline-offset:-1px;background:var(--track)}
+.calev.cust{border-left-color:var(--ord-3)}
+.calev.focus{border-left-color:var(--series-2);background:repeating-linear-gradient(
+  135deg,var(--surface-2),var(--surface-2) 6px,var(--track) 6px,var(--track) 12px)}
+.calev.hold{border-style:dashed}
+.calev .ct{font-size:9.5px;color:var(--text-muted);line-height:1.2}
+.calev .cn{font-size:11px;font-weight:620;line-height:1.25;margin-top:1px}
+.calev .cs{font-size:9.5px;color:var(--text-secondary);line-height:1.2;margin-top:1px}
+.calev .cflag{font-size:9px;font-weight:700;color:var(--critical);line-height:1.2;
+  margin-top:2px;display:block}
+.dotout{position:absolute;top:5px;right:6px;font-size:9px;font-weight:700;padding:0 4px;
+  border-radius:4px;border:1px solid}
+.dotout.good{color:var(--good);border-color:var(--good)}
+.dotout.partial{color:#8a5c00;border-color:var(--warning)}
+:root[data-theme="dark"] .dotout.partial{color:var(--warning)}
+.dotout.miss{color:var(--critical);border-color:var(--critical)}
+.legendkey{display:flex;gap:10px;padding:8px 11px 10px;border-top:1px solid var(--border);
+  font-size:10px;color:var(--text-secondary);flex-wrap:wrap}
+.legendkey span{display:flex;align-items:center;gap:5px}
+.swatch{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+
+/* ---------------- execution ---------------- */
+.brief>header{align-items:flex-start;flex-direction:column;gap:6px}
+.briefline{display:flex;align-items:center;gap:9px;width:100%;flex-wrap:wrap}
+.briefline h2{font-size:17px}
+.stage{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ord-5);background:var(--track);border-radius:5px;padding:2px 7px;white-space:nowrap}
+.factstrip{display:flex;flex-wrap:wrap;width:100%;row-gap:6px}
+.fact{padding-right:14px;margin-right:14px;border-right:1px solid var(--border)}
+.fact:last-child{border-right:0;margin-right:0}
+.fact .k{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+.fact .v{font-size:13px;font-weight:650;margin-top:1px;white-space:nowrap}
+.fact .v small{font-weight:400;color:var(--text-secondary);font-size:10.5px}
+
+.sect{padding:11px 12px;border-top:1px solid var(--border)}
+.sect>h4{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.agentic{font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--ord-4);
+  border:1px solid var(--ord-3);border-radius:999px;padding:1px 6px;text-transform:none}
+
+/* single-line stakeholders */
+/* two columns of single-line rows: 5 stakeholders in 3 rows instead of 5 */
+.slist{border:1px solid var(--border);border-radius:9px;background:var(--surface-2);
+  display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+@media (max-width:1200px){.slist{grid-template-columns:1fr}}
+.sl{display:grid;grid-template-columns:12px minmax(78px,auto) minmax(0,1fr) auto;
+  gap:8px;align-items:center;padding:4px 9px;font-size:11.5px;
+  border-bottom:1px solid var(--grid);min-width:0}
+.sl:nth-child(odd){border-right:1px solid var(--grid)}
+.sl .on{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.sl .off{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--axis)}
+.sl .nm{font-weight:640;white-space:nowrap}
+.sl .ti{color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:10.5px;min-width:0}
+.sl .ti em{font-style:normal;color:var(--text-muted)}
+.sl .rl{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
+  border:1px solid var(--border);color:var(--text-secondary);white-space:nowrap}
+.sl .rl.champ{border-color:var(--good);color:var(--good)}
+.sl .rl.eb{border-color:var(--critical);color:var(--critical)}
+.ourline{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-secondary);
+  padding:6px 2px 0;flex-wrap:wrap}
+.ourline b{color:var(--text-primary);font-weight:640}
+.ourline .k{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+
+.callout{display:grid;grid-template-columns:16px 1fr;gap:9px;background:var(--surface-2);
+  border:1px solid var(--border);border-left:3px solid var(--ord-3);border-radius:9px;
+  padding:9px 11px;font-size:11.5px;line-height:1.45}
+.callout.warn{border-left-color:var(--critical)}
+.gl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.gl li{display:grid;grid-template-columns:16px 1fr;gap:8px;font-size:11.5px;line-height:1.4}
+.gl li .ck{width:16px;height:16px;border-radius:5px;background:var(--track);color:var(--ord-5);
+  display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:1px}
+.gl li b{font-weight:650}
+.gl li .why{display:block;color:var(--text-secondary);font-size:10.5px;margin-top:1px}
+.commit{border-left:2px solid var(--warning);padding:1px 0 1px 9px;margin-bottom:6px;font-size:11.5px}
+.commit:last-child{margin-bottom:0}
+.commit .src{font-size:10px;color:var(--text-muted)}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:1480px){.cols2{grid-template-columns:1fr}}
+
+/* MEDDPICC letter strip */
+.hdrstrip{display:flex;align-items:center;gap:14px;width:100%;flex-wrap:wrap;
+  padding-top:8px;margin-top:2px;border-top:1px solid var(--border)}
+.hdrhint{font-size:10px;color:var(--text-muted)}
+.mstrip{display:flex;gap:3px}
+.mtile{width:40px;border:0;border-radius:7px;padding:5px 0 4px;text-align:center;
+  background:var(--ord-0);color:var(--ink-on-0);display:block}
+.mtile:hover{outline:2px solid var(--text-primary);outline-offset:1px}
+.mtile.e1{background:var(--ord-1);color:var(--ink-on-1)}
+.mtile.e2{background:var(--ord-2);color:var(--ink-on-2)}
+.mtile.e3{background:var(--ord-3);color:var(--ink-on-3)}
+.mtile.e4{background:var(--ord-4);color:var(--ink-on-4)}
+.mtile.e5{background:var(--ord-5);color:var(--ink-on-5)}
+.mtile .L{font-size:16px;font-weight:700;line-height:1;letter-spacing:.02em}
+.mtile .S{font-size:9.5px;font-weight:700;line-height:1.2;margin-top:2px;opacity:.9}
+.rcbox{display:flex;align-items:baseline;gap:8px}
+.rcbox .n{font-size:22px;font-weight:680;letter-spacing:-.02em}
+.rcbox .d{font-size:10.5px;color:var(--text-secondary)}
+.rcbox .delta{font-size:10.5px;font-weight:650;color:var(--delta-good)}
+.mlegend{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--text-muted);
+  margin-top:8px;flex-wrap:wrap}
+.mlegend .steps{display:flex;gap:2px}
+.mlegend .steps i{width:18px;height:8px;border-radius:2px;display:block}
+
+.focusband{background:var(--surface-2);border:1px solid var(--border);
+  border-left:3px solid var(--critical);border-radius:9px;padding:9px 11px;margin-top:11px}
+.focusband h5{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);font-weight:700;margin-bottom:6px}
+.focusband ol{margin:0;padding-left:17px;font-size:11.5px;line-height:1.45}
+.focusband ol li{margin-bottom:4px}
+.focusband ol li:last-child{margin-bottom:0}
+.focusband .el{font-weight:650}
+.expand{margin-top:9px;border:1px solid var(--border);background:var(--surface-2);
+  border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:600;color:var(--text-secondary)}
+
+.dd{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;margin-top:10px}
+.dd th{text-align:left;font-size:9px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--text-muted);font-weight:600;padding:0 8px 5px 0;
+  border-bottom:1px solid var(--axis);vertical-align:bottom}
+.dd td{padding:6px 8px 6px 0;border-bottom:1px solid var(--grid);vertical-align:top;line-height:1.35}
+.dd tr:last-child td{border-bottom:0}
+.dd tr.low{background:var(--track)}
+.dd .el{font-weight:650;font-size:11.5px}
+.dd .el .code{color:var(--text-muted);font-weight:400}
+.dd .lvl{display:flex;align-items:center;gap:5px;font-weight:650;white-space:nowrap}
+.dd .lvl .n{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:4px;
+  font-size:10px;background:var(--ord-0);color:var(--ink-on-0)}
+.dd .lvl .n.e1{background:var(--ord-1);color:var(--ink-on-1)}
+.dd .lvl .n.e2{background:var(--ord-2);color:var(--ink-on-2)}
+.dd .lvl .n.e3{background:var(--ord-3);color:var(--ink-on-3)}
+.dd .lvl .n.e4{background:var(--ord-4);color:var(--ink-on-4)}
+.dd .lvl .n.e5{background:var(--ord-5);color:var(--ink-on-5)}
+.dd .autodesc{color:var(--text-secondary);font-size:10px;margin-top:2px;font-style:italic}
+.dd .q{color:var(--text-secondary)}
+.dd .risk{color:var(--critical);font-size:10px;margin-top:3px;display:block}
+.dd .act{font-weight:600}
+
+/* Ask AI */
+.ask{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 11px}
+.ask .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ask .head h5{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.ask .head select{margin-left:auto;background:var(--surface-1);border:1px solid var(--border);
+  border-radius:6px;padding:2px 6px;font-size:10.5px;color:var(--text-secondary)}
+.askbar{display:flex;gap:7px}
+.askbar input{flex:1;background:var(--surface-1);border:1px solid var(--border);
+  border-radius:8px;padding:7px 10px;font-size:11.5px}
+.askbar input::placeholder{color:var(--text-muted)}
+.askbar button{background:var(--ord-3);border:1px solid var(--ord-3);color:#fff;
+  border-radius:8px;padding:0 14px;font-size:11.5px;font-weight:600}
+:root[data-theme="dark"] .askbar button{color:#0b0b0b}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px solid var(--border);background:var(--surface-1);border-radius:999px;
+  padding:3px 10px;font-size:10.5px;color:var(--text-secondary);text-align:left}
+.chip:hover{border-color:var(--ord-3);color:var(--text-primary)}
+.answer{margin-top:9px;border-top:1px solid var(--grid);padding-top:9px;font-size:11.5px;
+  line-height:1.5}
+.answer .qline{font-weight:650;margin-bottom:5px;display:flex;gap:7px}
+.answer .qline span{color:var(--ord-4)}
+.answer .src{margin-top:7px;font-size:10px;color:var(--text-muted);display:flex;gap:6px;
+  flex-wrap:wrap}
+.answer .src i{font-style:normal;border:1px solid var(--border);border-radius:4px;padding:0 5px}
+.thinking{font-size:11px;color:var(--text-muted)}
+
+/* ---------------- intelligence ---------------- */
+.fc{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 11px;margin-bottom:10px}
+.fc h5{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:8px}
+.fcrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:baseline;
+  font-size:11px;padding:2px 0}
+.fcrow .lab{color:var(--text-secondary);display:flex;align-items:center;gap:6px}
+.fcrow .lab i{width:9px;height:9px;border-radius:2px;display:block;flex:0 0 auto}
+.fcrow .amt{font-weight:650;white-space:nowrap}
+.fcrow .pc{font-weight:680;min-width:52px;text-align:right;white-space:nowrap}
+.fcbar{position:relative;height:13px;background:var(--track);border-radius:5px;
+  margin:9px 0 4px;display:flex;gap:2px;overflow:hidden}
+.fcbar span{display:block;height:100%}
+.fcbar .s1{background:var(--ord-5)} .fcbar .s2{background:var(--ord-3)}
+.fcbar .s3{background:var(--ord-1)}
+.fcmark{position:relative;height:14px;font-size:9px;color:var(--text-secondary)}
+.fcmark i{position:absolute;top:-8px;width:2px;height:8px;background:var(--text-primary)}
+.fcmark b{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-weight:600}
+.risknote{margin-top:8px;padding-top:8px;border-top:1px solid var(--grid);font-size:10.5px;
+  color:var(--text-secondary);display:grid;grid-template-columns:14px 1fr;gap:7px}
+.risknote b{color:var(--text-primary)}
+
+.opp{border:1px solid var(--border);border-radius:10px;background:var(--surface-2);
+  padding:9px 10px;margin-bottom:8px}
+.opp:last-child{margin-bottom:0}
+.opp .top{display:flex;align-items:baseline;gap:8px}
+.opp .nm{font-size:12px;font-weight:640;line-height:1.25}
+.opp .amt{margin-left:auto;text-align:right;white-space:nowrap}
+.opp .amt b{font-size:12px;font-weight:660}
+.opp .amt small{display:block;font-size:9.5px;color:var(--text-muted);font-weight:400}
+.opp .sub{font-size:10px;color:var(--text-secondary);margin-top:3px}
+.needtag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;
+  border:1px solid var(--border);color:var(--text-secondary);white-space:nowrap;
+  display:inline-block;margin-top:7px}
+.needtag.research{border-color:var(--ord-3);color:var(--ord-4)}
+.needtag.study{border-color:var(--series-2);color:var(--series-2)}
+.needtag.asset{border-color:var(--good);color:var(--good)}
+.needtag.map{border-color:var(--ord-5);color:var(--ord-5)}
+.opp .txt{font-size:11px;color:var(--text-secondary);margin-top:6px}
+.opp .drives{display:flex;align-items:center;gap:6px;margin-top:7px;padding-top:7px;
+  border-top:1px solid var(--grid);font-size:10.5px}
+.opp .drives .pts{font-weight:700;color:var(--delta-good);white-space:nowrap}
+.opp .act{margin-top:8px;display:flex;gap:6px}
+.mini{border:1px solid var(--border);background:var(--surface-1);border-radius:7px;
+  padding:4px 9px;font-size:10.5px;font-weight:600}
+.mini.primary{background:var(--ord-3);border-color:var(--ord-3);color:#fff}
+:root[data-theme="dark"] .mini.primary{color:#0b0b0b}
+.tailnote{font-size:10px;color:var(--text-muted);text-align:center;padding-top:5px}
+
+/* ---------------- charts / coaching ---------------- */
+.hbars{--cl-w:104px}
+.hbar{display:grid;grid-template-columns:var(--cl-w) 1fr 22px;gap:9px;align-items:center}
+.hbar+.hbar{margin-top:6px}
+.hbar .cl{font-size:10.5px;color:var(--text-secondary);text-align:right;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.hbar .tr{position:relative;height:15px;display:flex;align-items:center}
+.hbar .fl{height:15px;border-radius:0 4px 4px 0;min-width:3px}
+.hbar .vl{font-size:10.5px;color:var(--text-secondary);text-align:right}
+.axisfoot{display:grid;grid-template-columns:var(--cl-w) 1fr 22px;gap:9px;--cl-w:104px}
+.axisfoot .line{grid-column:2;height:1px;background:var(--axis);margin-top:8px}
+.axisfoot .ticks{grid-column:2;display:flex;justify-content:space-between;font-size:10px;
+  color:var(--text-muted);margin-top:3px}
+.chartlegend{display:flex;gap:12px;font-size:10.5px;color:var(--text-secondary);margin-top:9px;
+  flex-wrap:wrap;align-items:center}
+.chartlegend span{display:flex;align-items:center;gap:6px}
+.chartlegend i{width:10px;height:10px;border-radius:3px;display:block;flex:0 0 auto}
+.tablebtn{margin-left:auto;border:1px solid var(--border);background:var(--surface-2);
+  border-radius:6px;padding:2px 8px;font-size:10px;color:var(--text-secondary)}
+.dtable{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px}
+.dtable th,.dtable td{text-align:left;padding:4px 8px 4px 0;border-bottom:1px solid var(--grid)}
+.dtable th{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+.dtable td.n,.dtable th.n{text-align:right}
+.hm{max-width:900px;display:grid;gap:2px;font-size:10.5px}
+.hm .rl{font-size:10.5px;color:var(--text-secondary);white-space:nowrap;padding-right:8px;
+  display:flex;align-items:center}
+.hm .ch{font-size:9.5px;color:var(--text-muted);text-align:center;padding-bottom:5px}
+.hm .cell{height:26px;border-radius:3px;background:var(--ord-0)}
+.hm .cell:hover{outline:2px solid var(--text-primary);outline-offset:-2px}
+.hm .cell.e1{background:var(--ord-1)} .hm .cell.e2{background:var(--ord-2)}
+.hm .cell.e3{background:var(--ord-3)} .hm .cell.e4{background:var(--ord-4)}
+.hm .cell.e5{background:var(--ord-5)}
+.hm .avg{font-size:10.5px;font-weight:650;display:flex;align-items:center;
+  justify-content:flex-end;padding-left:8px}
+.hm .avg.weak{color:var(--critical)}
+.hmwrap{display:grid;grid-template-columns:minmax(0,900px) minmax(250px,1fr);gap:18px;
+  align-items:start}
+@media (max-width:1340px){.hmwrap{grid-template-columns:1fr}}
+.coach{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:11px 18px 18px;
+  align-items:start;flex:1 1 auto;min-height:0;overflow-y:auto}
+.coach .wide{grid-column:1/-1}
+
+/* ---- coaching: work-in-progress placeholder ---- */
+.coach-wip{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr);
+  align-items:stretch;overflow:hidden}
+.panel.wip{border-style:dashed;display:flex;flex-direction:column}
+.wipbadge{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--warning);color:#8a5c00;border-radius:999px;padding:2px 8px;
+  background:rgba(250,178,25,.12)}
+:root[data-theme="dark"] .wipbadge{color:var(--warning);background:transparent}
+.wipbody{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:40px 24px;
+  background:repeating-linear-gradient(135deg,var(--surface-1),var(--surface-1) 9px,
+    var(--plane) 9px,var(--plane) 18px)}
+.wipbody .wipicon{font-size:30px;color:var(--text-muted);line-height:1;margin-bottom:12px}
+.wipbody h3{font-size:16px;margin-bottom:9px}
+.wipbody p{margin:0 0 9px;max-width:520px;font-size:12.5px;color:var(--text-secondary);
+  line-height:1.55}
+.wipbody .wipmeta{font-size:11px;color:var(--text-muted);margin-bottom:0}
+.boxscore,.calltable{width:100%;border-collapse:collapse;font-size:11.5px}
+.boxscore th,.calltable th{text-align:left;font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--text-muted);padding:0 10px 6px 0;
+  border-bottom:1px solid var(--axis);font-weight:600}
+.boxscore td,.calltable td{padding:7px 10px 7px 0;border-bottom:1px solid var(--grid);
+  vertical-align:top}
+.boxscore tr:last-child td,.calltable tr:last-child td{border-bottom:0}
+.boxscore .metric{font-weight:620}
+.boxscore .metric small{display:block;font-weight:400;color:var(--text-secondary);font-size:10px}
+.boxscore td.n,.boxscore th.n{text-align:right;font-weight:650}
+.calltable .gv{color:var(--text-secondary)}
+.statuspill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:999px;border:1px solid var(--border);white-space:nowrap}
+.statuspill.good{color:var(--good);border-color:var(--good)}
+.statuspill.warning{color:#8a5c00;border-color:var(--warning);background:rgba(250,178,25,.13)}
+.statuspill.critical{color:var(--critical);border-color:var(--critical)}
+:root[data-theme="dark"] .statuspill.warning{color:var(--warning);background:transparent}
+
+.tip{position:fixed;z-index:99;pointer-events:none;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:11px;
+  box-shadow:0 6px 20px rgba(0,0,0,.16);max-width:270px;opacity:0;transition:opacity .09s}
+.tip.on{opacity:1}
+.tip .tt{font-weight:680;margin-bottom:3px}
+.tip .tr{display:flex;gap:7px;color:var(--text-secondary)}
+.tip .tr i{width:9px;height:9px;border-radius:2px;display:block;flex:0 0 auto;margin-top:3px}
+.tip .tr b{color:var(--text-primary);margin-left:auto;padding-left:10px}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;
+  z-index:200;padding:24px}
+.modal .box{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
+  max-width:760px;max-height:80vh;overflow-y:auto;padding:18px 20px;font-size:11.5px;
+  color:var(--text-secondary);line-height:1.55}
+.modal .box h4{font-size:14px;color:var(--text-primary);margin-bottom:9px}
+.modal .box p{margin:0 0 9px}
+.modal .box b{color:var(--text-primary)}
+.modal .box button{margin-top:6px;border:1px solid var(--border);background:var(--surface-2);
+  border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-primary)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="titlebar">
+    <b class="brand">SOLUTIONS CONSULTING COCKPIT</b>
+    <span class="mockflag">v6 mockup · fictional data</span>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-view="today">Today</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="coach">Coaching</button>
+    </div>
+    <button class="tbtn" id="aboutbtn">About</button>
+    <button class="iconbtn" id="themebtn" title="Toggle light / dark">◐</button>
+  </div>
+
+  <!-- ================= VISIBILITY ================= -->
+  <div class="kpibar">
+    <div class="hdr">
+      <span class="zone">Visibility</span>
+      <span class="cadence">Quarterly</span>
+      <div class="filt">
+        <label>Solutions Consultant
+          <select><option>Sam Carter</option><option>Dev Anand</option>
+            <option>Mira Kaplan</option></select></label>
+        <label>Quarter
+          <select><option>Q3, 2026</option><option>Q2, 2026</option></select></label>
+      </div>
+      <span class="src">SC Achievement Dashboard · synced 6:04am ET</span>
+    </div>
+    <div class="kpigrid">
+      <div class="tile"><div class="lbl">Individual growth credit</div>
+        <div class="val mono">$441,904</div><div class="sub">Q3, 2026 to date</div></div>
+      <div class="tile"><div class="lbl">Avg growth credit</div>
+        <div class="val mono">$55,238</div><div class="sub">per closed-won opp</div></div>
+      <div class="tile"><div class="lbl">Current open pipeline</div>
+        <div class="val mono">$481,214</div><div class="sub">11 open opps</div></div>
+      <div class="tile"><div class="lbl">Win rate</div>
+        <div class="val mono">32.0%</div><div class="sub">8 of 25</div></div>
+      <div class="meters">
+        <div class="meterrow"><div class="mlbl">C1 Individual growth credit <em>45%</em></div>
+          <div class="bar" data-meter="c1"><span style="width:62%"></span></div>
+          <div class="mval"><b>62%</b> <span class="mono">$442K of $712K</span></div></div>
+        <div class="meterrow"><div class="mlbl">C2 Team growth credit <em>45%</em></div>
+          <div class="bar" data-meter="c2"><span style="width:55%"></span></div>
+          <div class="mval"><b>55%</b> <span class="mono">$2.3M of $4.2M</span></div></div>
+        <div class="meterrow"><div class="mlbl">C3 Region renewal rate <em>10%</em></div>
+          <div class="bar" data-meter="c3"><span style="width:66%"></span>
+            <i class="tgt" style="left:70%"></i></div>
+          <div class="mval"><b>66%</b> <span class="mono">target 70%</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TODAY ================= -->
+  <div class="main" id="view-today">
+
+    <section class="panel col">
+      <header><span class="zone">Schedule</span><span class="cadence">Daily</span></header>
+      <div class="daynav">
+        <div><div class="d" id="daylabel"></div><div class="n" id="daycount"></div></div>
+        <div class="sp"><button class="chev" id="dayprev">‹</button>
+          <button class="chev" id="daynext">›</button></div>
+      </div>
+      <div class="calgrid" id="calgrid"></div>
+      <div class="legendkey">
+        <span><i class="swatch" style="background:var(--ord-3)"></i>Customer call</span>
+        <span><i class="swatch" style="background:var(--axis)"></i>Internal</span>
+        <span><i class="swatch" style="background:var(--series-2)"></i>Focus block</span>
+      </div>
+    </section>
+
+    <section class="panel brief col" id="brief"></section>
+
+    <section class="panel col">
+      <header><span class="zone">Intelligence</span><span class="cadence">Weekly</span></header>
+      <div class="body">
+        <div class="fc" id="forecast"></div>
+        <div id="oppqueue"></div>
+        <div class="tailnote" id="opptail"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= COACHING (work in progress) ================= -->
+  <div class="coach coach-wip" id="view-coach" hidden>
+    <section class="panel wide wip">
+      <header>
+        <span class="zone">Coaching</span><span class="cadence">Retro</span>
+        <span class="wipbadge">&#9881; Work in progress</span>
+        <span class="meta">not yet designed</span>
+      </header>
+      <div class="wipbody">
+        <div class="wipicon">&#9998;</div>
+        <h3>Coaching is still being designed</h3>
+        <p>The fourth workstream: surfacing trends and deals that won and lost,
+        to identify growth opportunities.</p>
+        <p class="wipmeta">Target 30 Sep 2026. This tab is deliberately empty for now.
+        Feedback on Visibility, Schedule, Execution and Intelligence first, please.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<div class="modal" id="aboutmodal" hidden>
+  <div class="box">
+    <h4>About this mockup</h4>
+    <p><b>Real.</b> The Visibility header mirrors the SC Achievement Dashboard's real structure,
+    with fictional figures. The eleven open opportunities sum to exactly the
+    $481,214 shown, and the forecast is derived from those amounts.</p>
+    <p><b>Real.</b> The MEDDPICC assessment uses the Deal Dissection Template: the nine
+    elements in the template's order, its Reality Check score, its Score Description looked
+    up live from the Reality Check Scoring Criteria sheet, its Strategic Briefing Question
+    and its Operational Risks / Blind Spots. Observed Deal Signals and Recommended Actions
+    are the template's two fill-in columns, which is what the agentic model generates.</p>
+    <p><b>Invented.</b> Every company, person, figure, stakeholder, calendar entry, deal
+    signal, recommended action, recap and Ask AI answer. Nothing here is a real customer,
+    a real colleague or a real number.</p>
+    <p><b>Not built yet.</b> The Coaching tab is a placeholder. The dead buttons in
+    Intelligence, the two dropdowns in Visibility, and Ask AI's free-text replies are
+    mock too.</p>
+    <p><b>Ask AI</b> is a mock. Answers are pre-written to show the shape of the interaction.
+    In the real thing the panel passes the deal context to the selected model.</p>
+    <button id="aboutclose">Close</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   THE RUBRIC, from "Updated MEDDPICC Deal Dissection Template"
+   sheet 1 "Deal Dissection Template", sheet 2 "Reality Check Scoring Criteria"
+   ===================================================================== */
+const LEVELS=[
+  {icon:"\u{1F6A8}",name:"Unknown"},{icon:"❓",name:"Unconfirmed"},
+  {icon:"\u{1F937}",name:"Partial Clarity"},{icon:"\u{1F50D}",name:"Verified"},
+  {icon:"\u{1F9E9}",name:"Integrated"},{icon:"\u{1F7E2}",name:"Rock Solid"}];
+
+const RUBRIC=[
+ {el:"Metrics",code:"M",q:"What measurable impact is the customer seeking?",
+  risk:"No quantified outcomes tied to business impact",
+  desc:["No metrics identified or discussed.",
+   "Discussed compelling event and early success measures with key stakeholder.",
+   "Identified how success will be measured and estimated potential, verifiable outcomes.",
+   "Confirmed how success is measured and agreed on potential, quantifiable outcomes.",
+   "Champion has accepted metrics and is using them to support internal discussions.",
+   "Economic Buyer has validated metrics and outcomes as part of the business case."]},
+ {el:"Economic Buyer",code:"E",q:"Who controls the budget and what matters to them?",
+  risk:"Haven't spoken directly to EB; relying on assumptions",
+  desc:["Not identified or no access.","Economic Buyer identified but no engagement.",
+   "Engaged indirectly or limited interaction; we understand their priorities.",
+   "Engaged in conversation; discussed business priorities and buying process.",
+   "Economic Buyer is aligned with the value of our solution and supports the direction.",
+   "Fully engaged; has validated business case and is committed to the initiative."]},
+ {el:"Decision Criteria",code:"D",q:"What criteria is the customer using to make a decision?",
+  risk:"No clarity on customer's weighted priorities",
+  desc:["No decision criteria identified.",
+   "Some assumptions made; criteria not validated with the buyer.",
+   "Criteria discussed and partially validated with key stakeholder(s).",
+   "Fully validated criteria aligned to buyer's business and technical needs.",
+   "Solution mapped clearly to criteria and positioned as strong fit.",
+   "Buyer agrees we best meet criteria and has reflected this internally."]},
+ {el:"Decision Process",code:"D",q:"What are the steps, roles, and timeline for a decision?",
+  risk:"No visibility into internal steps, blockers or influencers",
+  desc:["No understanding of decision process or stakeholders.",
+   "Some process detail assumed or gathered second-hand.",
+   "Understood who is involved and early view of stages and timelines.",
+   "Confirmed steps, stakeholders, and approval requirements.",
+   "Key stakeholders aligned to the process and our position.",
+   "Process fully mapped, timelines agreed, and we are actively driving it forward."]},
+ {el:"Paper Process",code:"P",q:"What steps are required post-signature to make it legal?",
+  risk:"Legal/Procurement assumptions; no mapped flow",
+  desc:["No visibility of paper process.",
+   "Aware that contracts and legal are involved, but no detail.",
+   "Understood basic steps and typical timelines.",
+   "Confirmed process steps, roles, and legal/procurement contacts.",
+   "Timings understood, potential blockers addressed, internal steps underway.",
+   "Fully mapped, aligned to close plan, no known blockers or delays."]},
+ {el:"Implication of Pain",code:"I",
+  q:"What is the customer's pain and is it just stated or truly implicated?",
+  risk:"Pain sounds generic or non-urgent",
+  desc:["No business pain identified.",
+   "General symptoms or challenges discussed, but not urgent or defined.",
+   "Pain discussed and linked to potential business impact.",
+   "Clearly defined business pain and urgency validated with key stakeholder.",
+   "Pain tied to metrics, strategic initiatives, and compelling reason to act.",
+   "Pain acknowledged across key stakeholders as critical and urgent to solve."]},
+ {el:"Champion",code:"C",q:"Who is your internal seller and how do you know they're committed?",
+  risk:"No Champion validation; unsure of influence",
+  desc:["No Champion identified.","Friendly contact, but no influence or ownership.",
+   "Supportive contact with some access to decision-makers.",
+   "Strong advocate who understands our value and engages others on our behalf.",
+   "Actively selling internally and influencing key decision-makers.",
+   "Highly influential, aligned to our success, and pivotal to internal approval."]},
+ {el:"Competition",code:"C",q:"What other vendors are in play and what's their edge?",
+  risk:"No plan against competitive threat; no differentiator",
+  desc:["No awareness of competitive landscape or status quo.",
+   "Aware of alternatives but unclear on buyer perception.",
+   "Competitors identified, and buyer's evaluation approach is understood.",
+   "Our differentiation positioned with key stakeholder(s).",
+   "Champion supports our positioning and helps navigate objections.",
+   "Buyer recognises our differentiation and views us as preferred partner."]},
+ {el:"Multithreading",code:"M",q:"Who else is influencing the deal and how well are you connected?",
+  risk:"Single-threaded or minimal access beyond key contact",
+  desc:["No information. No conversation or signals. Pure assumption.",
+   "You have a basic outline, but key details are missing or unclear.",
+   "Decent insight, but not deep or confirmed by multiple sources.",
+   "You've tested it through conversation, and it aligns with deal behaviour.",
+   "This element is working well and connected to other parts of the deal.",
+   "High certainty. Strong signal, verified by multiple stakeholders."]},
+];
+
+/* ===================== SCHEDULE ===================== */
+const DAYS=[
+ {label:"Wed 9 Sep",rel:"yesterday",past:true,events:[
+  {id:"w1",s:540,dur:45,kind:"cust",brief:"r-highmark",name:"Hooli Health · Discovery",
+   sub:"Sidney Brooks · 4",out:["good","✓"]},
+  {id:"w2",s:630,dur:25,kind:"int",brief:"i-standup",name:"SC team standup",sub:"Robin Vale + 6"},
+  {id:"w3",s:690,dur:45,kind:"cust",brief:"r-grainger",name:"Vandelay · Exec demo",
+   sub:"Alex Rivera · 6",out:["partial","◑"]},
+  {id:"w4",s:840,dur:60,kind:"focus",brief:"f-sentry",name:"Focus: Acme Mutual security answers",
+   sub:"auto-held",out:["miss","✕"]},
+  {id:"w5",s:930,dur:30,kind:"cust",brief:"r-centene",name:"Sesame Street Inc. · Prep call with Dana",
+   sub:"you only",out:["good","✓"]}]},
+ {label:"Thu 10 Sep",rel:"today",now:678,events:[
+  {id:"centene",s:540,dur:45,kind:"cust",brief:"centene",name:"Sesame Street Inc. · Executive readout",
+   sub:"Alex Rivera · 5",flag:"EB ON CALL, FIRST TIME"},
+  {id:"sync",s:600,dur:30,kind:"int",brief:"i-sync",name:"AMER West pipeline sync",
+   sub:"Sidney Brooks + 4"},
+  {id:"molina",s:660,dur:45,kind:"cust",brief:"molina",name:"Initech · Discovery",
+   sub:"Sidney Brooks · 3",flag:"NEW LOGO"},
+  {id:"sentry",s:720,dur:30,kind:"cust",brief:"sentry",name:"Acme Mutual · Security & procurement",
+   sub:"Alex Rivera · 3",flag:"RENEWS IN 5 DAYS"},
+  {id:"focus",s:780,dur:90,kind:"focus",brief:"f-centene",name:"Focus: build Sesame St demo",
+   sub:"auto-held"},
+  {id:"clickup",s:870,dur:45,kind:"cust",brief:"clickup",name:"Globex · Renewal value review",
+   sub:"Skye Tran · 2",flag:"NO EB · RENEWS IN 3"},
+  {id:"oneone",s:960,dur:30,kind:"int",brief:"i-oneone",name:"Alex Rivera · deal strategy 1:1",
+   sub:"7 open opps"}]},
+ {label:"Fri 11 Sep",rel:"tomorrow",events:[
+  {id:"f1",s:570,dur:30,kind:"cust",brief:"i-molina2",hold:true,name:"Initech · Follow-up",
+   sub:"provisional hold",flag:"DEPENDS ON THURSDAY"},
+  {id:"f2",s:630,dur:45,kind:"int",brief:"i-renewrev",name:"Region renewal review",
+   sub:"Robin Vale + 5"},
+  {id:"f3",s:690,dur:30,kind:"cust",brief:"i-grainger2",name:"Vandelay · Committee async review",
+   sub:"Alex Rivera · 4 invited"},
+  {id:"f4",s:780,dur:90,kind:"focus",brief:"f-clickup",name:"Focus: Globex expansion case",
+   sub:"unclaimed"},
+  {id:"f5",s:900,dur:60,kind:"int",brief:"i-q4build",name:"Q4 pipeline build with Alex Rivera",
+   sub:"Q4 coverage 0.7x"}]},
+];
+let dayIdx=1, currentEv="centene";
+
+/* ===================== BRIEFS ===================== */
+const BRIEFS={
+centene:{type:"deal",title:"Sesame Street Inc. · Executive readout",stage:"Stage 4 · Selected",
+ opp:"SesameSt-Renewal-USD",
+ facts:[["ATR","$910,000"],["Growth credit","$362,000"],["Renewal","30 Sep <small>· 20 days</small>"],
+  ["Days in stage","34"],["AE","Alex Rivera"],["Last touch","yesterday"]],
+ people:[
+  {n:"Dana Winters",t:"VP Digital Experience",role:"Champion",cls:"champ",on:true,lt:"12 touches"},
+  {n:"Ray Okonjo",t:"SVP Customer Experience, budget owner",role:"Economic Buyer",cls:"eb",on:true,lt:"0 direct"},
+  {n:"Pia Raman",t:"Director, UX Research",role:"User champion",on:true,lt:"7 touches"},
+  {n:"Chris Lange",t:"Director, Digital Analytics, owns Pixelgraph",role:"Influencer",on:true,lt:"2 touches"},
+  {n:"Mo Bell",t:"Procurement Manager",role:"Not invited",on:false,lt:"0 touches"}],
+ internal:[{n:"Sam Carter",t:"Solutions Consultant",role:"You",on:true,lt:""},
+  {n:"Alex Rivera",t:"Account Executive",role:"Owner",on:true,lt:""},
+  {n:"Tess Bramble",t:"Customer Success Manager",role:"Support",on:true,lt:""}],
+ alert:"Ray Okonjo joins for the first time in 34 days of Stage 4. Mo Bell is not on the invite and no signature path is mapped, 20 days out.",
+ expects:[
+  ["Live customer-journey study replay","Committed 21 Aug: 8 sessions on the new checkout flow, filtered to 55+ customers. Dana will screen-share the current portal for contrast."],
+  ["Cost per insight, not seat counts","Ray's team funds outcomes. He has asked for this framing twice through Dana."],
+  ["A straight answer on Pixelgraph co-existence","Chris owns Pixelgraph and has sat through two calls without hearing our position."],
+  ["The accessibility read-out deck","Dana has now asked twice. It is 20 days old."]],
+ commitments:[
+  ["Deliver the 55+ accessibility read-out deck","you, 21 Aug · 20 days open","critical"],
+  ["Answer Pixelgraph overlap in writing","you, 28 Aug · 13 days open","critical"],
+  ["Confirm SSO and SCIM timeline","Alex, 28 Aug · confirmed 5 Sep","good"],
+  ["Share panel recruitment lead times","Tessa, 2 Sep · sent 3 Sep","good"]],
+ scores:[4,2,4,3,1,4,5,2,3], prev:[4,2,4,3,1,3,5,1,3],
+ signals:[
+  "Dana uses cost-per-insight internally. Ray has not confirmed the number himself.",
+  "Identified via Dana. Priorities known second-hand. First direct conversation is today.",
+  "Research velocity, accessibility coverage and Pixelgraph co-existence, all validated with Dana.",
+  "Steps and approvers confirmed. Renewal committee sits 23 Sep, the real deadline.",
+  "We know legal and procurement are involved. No named contact, no mapped flow.",
+  "Tied to a board-level customer-satisfaction target and the Q4 retention commitment.",
+  "Dana arranged today's readout, coached you on Ray, forwards our material unprompted.",
+  "Pixelgraph is deployed and adjacent. Buyer's view of us versus them is untested.",
+  "Five contacts across four functions. Nothing inside finance or procurement."],
+ actions:[
+  "Have Ray state the customer-experience number he is accountable for, in his own words, with Dana present.",
+  "Ask Ray what would have to be true for him to fund this as a program in FY27.",
+  "Confirm nothing has changed since Dana validated the criteria, then move on.",
+  "Confirm the 23 Sep committee date and ask what gets circulated beforehand.",
+  "Ask Dana who signs, what legal review takes, and whether Mo must be involved. Get dates on the call.",
+  "Open with the churn exposure so the pain is Ray's before the demo starts.",
+  "Ask Dana to introduce the framing rather than presenting it yourself.",
+  "Name Pixelgraph before Chris does. Position the what versus the why explicitly.",
+  "Ask Chris to co-present the next readout, which converts him from spectator to thread."],
+ ask:[
+  ["Why is Paper Process only a 1?","Because nothing in the record gets past 'aware that contracts and legal are involved', which is exactly the rubric's level 1. Three specifics are missing: no named legal or procurement contact, no review duration, and no signature owner. Mo Bell is the only procurement name on the account and he has zero touches and is not on today's invite. With 20 days to the renewal date and a patch average paper cycle of 24 days, this is the element most likely to cost you the quarter, not the value conversation.",
+   ["Reality Check rubric, level 1","Salesforce contact history","Renewal date 30 Sep"]],
+  ["What changed since the last call?","Two things, both from yesterday's 30 minute prep call with Dana. Competition moved 1 to 2 because Dana told you Ray opens every review with cost per unit of outcome, so you now understand how the buyer evaluates rather than just knowing Pixelgraph exists. Implication of Pain moved 3 to 4 because the retention link was confirmed as board-visible. Composite went 26 to 28. Nothing else moved, and Paper Process has been stuck at 1 for 34 days.",
+   ["Call recap, 9 Sep","Reality Check history"]],
+  ["Who else should be on this call?","Mo Bell, procurement. He is the only mapped route to the paper process and he has never been contacted. The counter-argument is that adding procurement to an executive readout signals you are closing before Ray has bought in, so the better move is to ask Dana on this call for permission to bring Mo into a separate 15 minute mechanics conversation this week. Chris Lange is already on the invite but unowned, which is a different problem: he needs a job, not an introduction.",
+   ["Stakeholder map","Multithreading score 3"]],
+  ["Draft the follow-up email","Held until after the call, deliberately. The follow-up that matters depends on whether Ray names his metric. If he does, the email restates it in his words and attaches the accessibility read-out. If he does not, the email should ask for it directly rather than paper over the gap. Ask again when the recap lands and this will draft both versions against what actually happened.",
+   ["Prep packet policy"]]]},
+
+sentry:{type:"deal",title:"Acme Mutual · Security & procurement review",stage:"Stage 4 · Selected",
+ opp:"AcmeMutual-Renewal-USD",
+ facts:[["ATR","$46,800"],["Growth credit","$34,500"],["Renewal","15 Sep <small>· 5 days</small>"],
+  ["Days in stage","22"],["AE","Alex Rivera"],["Last touch","8 Sep"]],
+ people:[
+  {n:"Erin Kovacs",t:"Manager, Digital Product",role:"Champion",cls:"champ",on:true,lt:"9 touches"},
+  {n:"Tomas Lind",t:"InfoSec Architect",role:"Technical gate",on:true,lt:"2 touches"},
+  {n:"Gail Merrick",t:"Procurement Lead",role:"Paper process",on:true,lt:"1 touch"}],
+ internal:[{n:"Sam Carter",t:"Solutions Consultant",role:"You",on:true,lt:""},
+  {n:"Alex Rivera",t:"Account Executive",role:"Owner",on:true,lt:""}],
+ alert:"Five days to renewal with three open security items and no named owner for the DPA redline. The focus block held for this yesterday went unused.",
+ expects:[
+  ["Written answers to items 14, 22 and 31","Data residency, subprocessor list, session-recording retention. Tomas raised all three on 8 Sep and has heard nothing."],
+  ["A named owner for the DPA redline","Gail asked who signs on our side. Two days unanswered."],
+  ["The SOC 2 Type II bridge letter","Promised by you on 8 Sep. Not sent."]],
+ commitments:[
+  ["Send the SOC 2 Type II bridge letter","you, 8 Sep · 2 days open","critical"],
+  ["Confirm EU data residency in writing","you, 8 Sep · 2 days open","critical"]],
+ scores:[3,3,4,4,2,2,4,4,3], prev:[3,3,4,3,1,2,4,4,2],
+ signals:[
+  "Research cycle time agreed with Erin. Proportionate instrumentation for the deal size.",
+  "Erin's director engaged directly and discussed business priorities in August.",
+  "Security, residency and retention are the criteria that decide this renewal.",
+  "Approvers aligned and the renewal path understood end to end.",
+  "Basic steps known. Redline owner unnamed with five days to go.",
+  "A working tool renewing. Urgency is procedural, nobody has said what a lapse costs.",
+  "Erin drives the internal steps and chased Tomas on your behalf.",
+  "Status quo is the only alternative. Our differentiation is positioned.",
+  "Three functions on the call today, which is the fix already in motion."],
+ actions:[
+  "Nothing to add. Do not spend call time here.",
+  "Confirm the director is still the approver and move on.",
+  "Read the trust-centre answers into the record while Tomas is present.",
+  "Confirm the 15th is still the internal target, not just the contract date.",
+  "Ask Gail what date the DPA must land to make the 15th, then work backwards and name owners.",
+  "Ask Erin what happens operationally if this lapses. That answer is the urgency you are missing.",
+  "Thank Erin explicitly for chasing Tom, in front of Gail.",
+  "Nothing to add.",
+  "Nothing to add. Today's attendance is the action."],
+ ask:[
+  ["What is actually blocking this?","One sentence: nobody on our side has been named as the owner of the DPA redline. The three security items are not really blockers, the answers exist in the trust centre and assembling them is about 20 minutes of work. The redline owner is a blocker because it needs a person, and Gail asked for that name two days ago. Everything else about this deal is healthy: Decision Process is 4, Competition is 4, Champion is 4.",
+   ["Reality Check: Paper Process 2","Email thread, 8 Sep"]],
+  ["Is the 15th realistic?","Yes, but only if the redline owner is named today. Working backwards: Gail needs the DPA at least three business days before the renewal date, which is the 10th, today. The security answers must land before the DPA moves. So the sequence is answers this morning, owner named on this call, DPA to Gail by end of day. If any of those slip a day the 15th becomes the 18th and C3 takes the hit.",
+   ["Renewal date 15 Sep","Patch paper cycle, 24 days avg"]],
+  ["Why is Implication of Pain only a 2?","Because it is a renewal of a tool that already works, so nobody has articulated a cost of losing it. The rubric's level 2 is 'pain discussed and linked to potential business impact', which is where you are. The move to 3 is one question to Erin: what happens operationally on the 16th if this lapses. That is the only element on this deal with headroom that a single question can close.",
+   ["Reality Check rubric, level 2"]]]},
+
+molina:{type:"deal",title:"Initech · Discovery",stage:"Stage 2 · Develop",
+ opp:"Initech-NewLogo-USD",
+ facts:[["ATR","$195,000"],["Growth credit","$17,600"],["Target close","18 Dec"],
+  ["Days in stage","11"],["AE","Sidney Brooks"],["Last touch","2 Sep"]],
+ people:[
+  {n:"Alicia Fenn",t:"Senior Director, Digital Product",role:"Sponsor?",on:true,lt:"1 touch, AE only"},
+  {n:"Wes Tanner",t:"Manager, Research Operations",role:"Practitioner",on:true,lt:"0 touches"},
+  {n:"Dom Reyes",t:"Product Design Lead",role:"Unknown",on:true,lt:"0 touches"}],
+ internal:[{n:"Sam Carter",t:"Solutions Consultant",role:"You",on:true,lt:""},
+  {n:"Sidney Brooks",t:"Account Executive",role:"Owner",on:true,lt:""}],
+ alert:"First SC call on a new logo. Three practitioners, no budget in the room, no compelling event on file. Everything here is discovery, so resist demoing.",
+ expects:[
+  ["A reason this is worth 45 minutes","Sidney positioned you as the person who has seen this at similar companies. Lead with the Hooli and Sesame St pattern, not the product."],
+  ["Evidence you understand regulated-industry research constraints","compliance review, panel recruitment and legal sign-off are the three things that kill research programs in regulated industries. Naming them unprompted buys credibility fast."]],
+ commitments:[["Send the research maturity one-pager","Sidney, 2 Sep · sent 3 Sep","good"]],
+ scores:[2,1,2,1,0,4,3,2,2], prev:[1,0,1,0,0,2,1,1,1],
+ signals:[
+  "Initech's CSAT fell four points in the 2026 H1 cycle. Public, not yet discussed with them.",
+  "Alicia may be a sponsor rather than a buyer. Nobody has asked.",
+  "Assumed from the sector pattern. Nothing validated with anyone at Initech.",
+  "No visibility. New logo, no prior paper, no known procurement route.",
+  "No information, which is expected at Stage 2.",
+  "retention pressure is board-visible and quantifiable. Real pain, not yet ours to solve.",
+  "Alicia took the meeting and brought two others. Influence unproven.",
+  "No incumbent known. Status quo is manual research and ad-hoc vendor panels.",
+  "Three contacts, one function, nobody above manager level except Alicia."],
+ actions:[
+  "Ask what changed internally after the CSAT drop and who owns fixing it. That person is the EB.",
+  "Ask Alicia who else would need to agree, before she is invested enough to be defensive.",
+  "Do not propose criteria. Ask how they evaluated their last research vendor.",
+  "Ask what a purchase of this size normally requires at Initech. One question, big payoff.",
+  "Leave it. Premature at Stage 2 and asking now signals you are selling, not listening.",
+  "Get Alicia to say the exposure out loud, in dollars or in rating points.",
+  "Test Alicia's influence: ask whether she can convene the retention owner.",
+  "Ask what they do today and what it costs them. Do not name competitors.",
+  "Ask for one introduction, to whoever owns the customer-experience metric."],
+ ask:[
+  ["What should I not do on this call?","Demo. Discovery-to-demo inside one call correlates with a 14% win rate across your patch against 32.0% overall, and you have done it on 1.4 calls per deal against a patch median of 2.1. The second thing is proposing decision criteria. You will be tempted because you know the sector pattern from Hooli, but criteria you supply are criteria you have to defend later. Ask how they chose their last research vendor instead.",
+   ["Box score: discovery before first demo","Patch win-rate analysis"]],
+  ["What is the one question that matters?","Initech's CSAT dropped four points in the 2026 H1 cycle. Ask what changed internally as a result, and who owns fixing it. That single question does three jobs: it surfaces the compelling event, it identifies the economic buyer, and it demonstrates you did homework. Hooli answered a near-identical question yesterday and moved Metrics from 3 to 5 in one call.",
+   ["Public benchmark data","Hooli recap, 9 Sep"]],
+  ["How does this compare to Hooli?","Same pressure, very different maturity. Hooli is at 34 of 45, Initech at 17. The gap is almost entirely access: Hooli has an engaged economic buyer at 4 and Initech has none at 1. Both have strong pain, 5 and 4. That is the encouraging read, because pain is the hard part to manufacture and access is the part you can ask for.",
+   ["Reality Check, both deals"]]]},
+
+clickup:{type:"deal",title:"Globex · Renewal value review",stage:"Stage 3 · Prove",
+ opp:"Globex-Renewal-USD-113160",
+ facts:[["ATR","$74,500"],["Growth credit","$31,200"],["Renewal","13 Sep <small>· 3 days</small>"],
+  ["Days in stage","61"],["AE","Skye Tran"],["Last touch","26 Aug"]],
+ people:[
+  {n:"Jamie Rowe",t:"Senior UX Researcher",role:"Day-to-day user",on:true,lt:"14 touches"},
+  {n:"Nik Varga",t:"Head of Product Design",role:"Unconfirmed",on:true,lt:"0, 3 declines"}],
+ internal:[{n:"Sam Carter",t:"Solutions Consultant",role:"You",on:true,lt:""},
+  {n:"Skye Tran",t:"Account Executive",role:"Owner",on:true,lt:""}],
+ alert:"Stage 3 with three days to renewal, no economic buyer identified, and 61 days in stage. The highest-risk item on the board, and the risk is ours.",
+ expects:[
+  ["Proof the seats being renewed got used","Utilisation is 41% of licensed seats. Jamie already knows the number, so lead with it rather than defend it."],
+  ["A reason for Nik to care","He has declined three invites. Renewals that stay inside the research team renew flat at best."],
+  ["The Q2 study inventory","Promised by Sarah on 26 Aug with named business outcomes. Never sent."]],
+ commitments:[["Share the Q2 study inventory with named outcomes","Sarah, 26 Aug · 15 days open","critical"]],
+ scores:[1,0,2,1,2,1,2,1,1], prev:[1,0,2,1,2,1,2,1,1],
+ signals:[
+  "A compelling event was discussed with Jamie in July. Nothing quantified since.",
+  "Not identified. No access. Three declined invites. Three days out.",
+  "Assumed from last year's renewal, never revalidated with anyone.",
+  "Second-hand. We assume auto-renew and have never tested that assumption.",
+  "Prior-year paper reused. Steps known, roles unconfirmed.",
+  "Symptoms discussed. Nothing urgent, quantified or owned.",
+  "Jamie is supportive with no budget influence and no access upward.",
+  "Aware of alternatives. Buyer perception entirely unknown.",
+  "Single-threaded into the research team for 61 days."],
+ actions:[
+  "Reframe from seats to studies shipped. You have 14 shipped studies; a seat defence loses at 41%.",
+  "Ask Nik who owns the research budget line for FY27. Do not end the call without a name.",
+  "Ask Nik what would make this obviously worth renewing. Let him set the criteria.",
+  "Test the auto-renew assumption out loud. If it is wrong you have three days and no process.",
+  "Confirm whether a signature is required at all. Nobody has checked.",
+  "Ask Jamie what he would lose access to on Monday if this lapsed, with Nik listening.",
+  "Ask Jamie for the introduction to design ops while Nik is on the call.",
+  "Ask what else they considered last cycle and why they stayed.",
+  "Name design ops and the growth team, and ask for one introduction."],
+ ask:[
+  ["Why has nothing moved on this deal in 61 days?","Because every conversation has been with the same person. Jamie Rowe has 14 touches and no budget influence; Nik Varga has zero touches and three declined invites. Six of the nine elements have not changed since July, and the three that could move all require someone other than Jamie. This is the clearest single-threading case in your patch, and Multithreading is your weakest predictor overall at 2.1 against a 3.4 median.",
+   ["Reality Check history, 61 days","Contact activity","Box score: multithreading"]],
+  ["Should I be worried about this renewal?","Yes, and more than the amount suggests. $31,200 of credit is 4.4 points of C1, but the real exposure is that nobody has confirmed a signature is even required. If it auto-renews you are fine and the call is an expansion conversation. If it does not, you have three days, no identified buyer and no mapped paper process. That question has never been asked in three calls, which makes it the first thing to establish today.",
+   ["Decision Process 1","Paper Process 2","Renewal 13 Sep"]],
+  ["What is the strongest thing I have going in?","Fourteen shipped studies. That is the only asset on this deal, and it is a real one. Utilisation is 41% by seats but the studies that did run went somewhere, and the Q2 inventory Sarah promised on 26 Aug would show exactly where. Lead with studies-to-decision rather than seats-to-licences, because the seat frame is a losing frame at 41% and the study frame is the one Nik has a reason to care about.",
+   ["Product usage data","Open commitment, 26 Aug"]]]},
+
+/* recaps */
+"r-highmark":{type:"recap",title:"Hooli Health · Discovery",stage:"Recap · 9 Sep",
+ verdict:["good","Guidance followed"],
+ facts:[["ATR","$138,600"],["Growth credit","$13,900"],["Stage after","Stage 2"],
+  ["Reality Check","34 of 45 <small>· up 6</small>"]],
+ lines:[["Guidance issued","Quantify the churn exposure with a named stakeholder in the room."],
+  ["What happened","Exposure quantified at $3.8M and confirmed live by the VP of Customer Experience. Two new stakeholders volunteered for the next session."],
+  ["Why it worked","You made the customer do the arithmetic out loud instead of presenting a number at them. Metrics moved 3 to 5 and Implication of Pain 3 to 5 in one call."],
+  ["Reuse","This is the pattern for Sesame St at 9:00 and Initech at 11:00. Same retention pressure, same demographic, same question."]]},
+"r-grainger":{type:"recap",title:"Vandelay · Exec demo",stage:"Recap · 9 Sep",
+ verdict:["partial","Partially followed"],
+ facts:[["ATR","$86,400"],["Growth credit","$8,700"],["Stage after","Stage 3"],
+  ["Reality Check","20 of 45 <small>· up 1</small>"]],
+ lines:[["Guidance issued","Multithread beyond the director. Leave with two named stakeholders and a reason to contact each."],
+  ["What happened","Two names surfaced, Pia Mendez in design ops and a finance contact the recap did not capture. Neither was followed up."],
+  ["The gap","Surfacing is not threading. A name without a calendar invite is not a thread, and Multithreading is your weakest predictor at 2.1 against a 3.4 median."],
+  ["Fix today","Friday's async committee review is the vehicle. Add both names before the 4:00 one-to-one with Alex."]]},
+"r-centene":{type:"recap",title:"Sesame Street Inc. · Prep call with Dana",stage:"Recap · 9 Sep",
+ verdict:["good","Guidance followed"],
+ facts:[["Attendees","1"],["Duration","30m"],["Outcome","Ray confirmed"],
+  ["Reality Check","28 of 45 <small>· up 2</small>"]],
+ lines:[["Guidance issued","Confirm Ray's attendance and ask Dana what he actually cares about."],
+  ["What happened","Ray confirmed for the 9:00 readout. Dana coached you that he opens every review with cost per unit of outcome and dislikes tool demonstrations."],
+  ["What it changed","Competition moved 1 to 2 and Implication of Pain 3 to 4. This morning's agenda was rebuilt around Ray's framing rather than the product."],
+  ["Still open","Dana asked again for the accessibility read-out deck. Now 20 days old, and the first thing Ray will hear about if it stays open."]]},
+
+/* internal and focus */
+"i-sync":{type:"internal",title:"AMER West pipeline sync",stage:"Internal · 30m",lines:[
+ ["Bring","The three renewals dated inside 20 days: Sesame St, Acme Mutual, Globex. Two of the three have a Paper Process or Economic Buyer gap rather than a value gap."],
+ ["Ask for","Alex's 7 open opps are 64% of your open pipeline. Get her to name the two she wants SC leverage on, rather than spreading you across seven."],
+ ["Flag","Region renewal rate is 68% against a 72% target and C3 is 10% of comp. Two of the four at-risk renewals are owned by people in this room."],
+ ["Do not raise","Globex's 41% utilisation. That is Sarah's number to surface, and doing it for her in a group costs you the partnership you need at 2:30."]]},
+"i-oneone":{type:"internal",title:"Alex Rivera · deal strategy 1:1",stage:"Internal · 30m",lines:[
+ ["The pattern","Across Alex's 7 open opps, average Multithreading is 2.1. Your win rate above 3.0 is 58%; below it, 14%. Bring the number, not the impression."],
+ ["Specific ask","Two accounts for an EB-level session inside 10 days. Sesame St is one. Let her choose the second so it is hers."],
+ ["Evidence","Relationship depth and delayed decision are 5 of the 15 losses this quarter. Both are influenceable and both sit in her patch."],
+ ["Close with","Yesterday's Vandelay names. Two surfaced, neither threaded. Offer to own Friday's async review if she owns the introductions."]]},
+"i-standup":{type:"internal",title:"SC team standup",stage:"Internal · 25m",lines:[
+ ["Your item","Acme Mutual security answers are the only thing between a $47K renewal and the 15th. Ask if anyone has answered items 14, 22 and 31 recently."],
+ ["Listen for","Anyone with a similar account. Initech discovery is tomorrow and the Hooli framing is reusable."]]},
+"i-renewrev":{type:"internal",title:"Region renewal review",stage:"Internal · 45m",lines:[
+ ["The number","Region renewal rate is 68% against a 72% target. C3 is 10% of comp and 100% of this meeting."],
+ ["Yours","Of the four at-risk renewals, Globex and Acme Mutual are yours. Both are process failures rather than value failures, which is the more fixable kind."],
+ ["The systemic point","Paper Process averages 1.3 across six live deals in your patch. Three of four deals that slipped a quarter slipped on signature mechanics."],
+ ["Ask","A standing legal contact for renewals under $100K. The DPA redline owner question has cost two deals a week each this quarter."]]},
+"i-molina2":{type:"internal",title:"Initech · Follow-up (provisional)",stage:"Hold · 30m",lines:[
+ ["Why it is here","Held automatically against Thursday's discovery. It becomes a real meeting only if you leave Thursday with a named economic buyer."],
+ ["If Thursday lands","This is the demo scoping call. Bring the Sesame St accessibility readout as the reference artifact."],
+ ["If it does not","Release the hold and give the slot to the Globex expansion case, currently unclaimed at 1:00."]]},
+"i-grainger2":{type:"internal",title:"Vandelay · Committee async review",stage:"Customer async · 30m",lines:[
+ ["What this is","An async video walkthrough for the wider buying committee. The asset does not exist yet. Three hours of build, unbooked."],
+ ["Who should be on it","Pia Mendez in design ops and the unnamed finance contact from yesterday. Both surfaced, neither threaded."],
+ ["The play","Use the asset as the reason for the introduction, so Alex asks a favour on your behalf rather than making a cold ask."]]},
+"i-q4build":{type:"internal",title:"Q4 pipeline build with Alex Rivera",stage:"Internal · 60m",lines:[
+ ["The problem","Q4 coverage is 0.7x against a 3.0x target. Q3 closes in three weeks and there is not enough behind it."],
+ ["Where the credit is","Initech at $17,600 and Cyberdyne at $5,800 are the only new-logo credit of size. Both are pre-demo."],
+ ["Bring","The four Q3 losses coded delayed decision. Three are still live accounts and none has been re-approached."]]},
+"f-centene":{type:"focus",title:"Focus: build Sesame St demo",stage:"Auto-held · 90m",lines:[
+ ["Why this block exists","Held by the prep engine when the 21 Aug commitment to an 8-session 55+ replay passed 14 days unsent. It re-holds until the commitment closes."],
+ ["Deliverable","Study replay reel filtered to 55+ customers on the claims flow, plus the accessibility read-out deck Dana has asked for twice."],
+ ["Reusable","Three prior 55+ accessibility studies exist in the patch, two from Hooli. This is an edit, not a build. Roughly 40 of the 90 minutes."],
+ ["Second use","The same asset is most of a Initech deliverable and the reference artifact for Friday. One build, three deals."]]},
+"f-sentry":{type:"focus",title:"Focus: Acme Mutual security answers",stage:"Auto-held 9 Sep",
+ verdict:["miss","Block not used"],lines:[
+ ["What it was for","Assembling trust-centre answers to security items 14, 22 and 31 so Erin could move the DPA redline."],
+ ["What happened","The block was held and went unused. The Vandelay demo overran and this was the slot that absorbed it."],
+ ["The cost","Two days lost against a 15 Sep renewal. The work is still 20 minutes and it is now the top item in Intelligence."],
+ ["The pattern","Third focus block absorbed by an overrunning call this quarter. Commitments closed within 7 days sits at 58% against a 70% median."]]},
+"f-clickup":{type:"focus",title:"Focus: Globex expansion case",stage:"Auto-held · 90m · unclaimed",lines:[
+ ["Why it exists","Held against 41% utilisation on an $74,500 renewal closing in three days. Nobody has claimed it."],
+ ["Deliverable","A six-participant study design on the unused workflows, positioned as the expansion case rather than a renewal defence."],
+ ["The honest read","This block is Friday and the renewal is Sunday. If no economic buyer is named at 2:30 Thursday, this work has no audience and the slot should go to Initech."]]},
+};
+
+/* ===================== INTELLIGENCE ===================== */
+const TARGET=712000, EARNED=441904, PIPELINE=481214;
+const STAGE_P={1:0.10,2:0.25,3:0.50,4:0.75};
+const OPPS=[
+ {n:"Acme Mutual",gc:34500,atr:46800,st:4,stage:"Stage 4",when:"renews 15 Sep",
+  ae:"Alex Rivera",need:["research","Security answers"],
+  txt:"Trust-centre answers to items 14, 22 and 31 already exist and need assembling. That unblocks the DPA redline.",
+  drives:"Largest credit you can land this month"},
+ {n:"Globex",gc:31200,atr:74500,st:3,stage:"Stage 3",when:"renews 13 Sep",
+  ae:"Skye Tran",need:["study","Custom study"],
+  txt:"41% seat utilisation. A six-participant study on the unused workflows turns a flat renewal into an expansion case.",
+  drives:"At risk rather than incremental. No EB identified"},
+ {n:"Initech",gc:17600,atr:195000,st:2,stage:"Stage 2",when:"closes 18 Dec",
+  ae:"Sidney Brooks",need:["research","Account research"],
+  txt:"Discovery is at 11:00 today. retention-driver research is the difference between a demo request and a compelling event.",
+  drives:"Only new-logo credit of size in the patch"},
+ {n:"Hooli Health",gc:13900,atr:138600,st:2,stage:"Stage 2",when:"closes in Q4",
+  ae:"Sidney Brooks",need:["research","Reuse Sesame St readout"],
+  txt:"retention pressure mirrors Sesame St exactly. The readout built at 1:00 today is most of the way to a Hooli asset.",
+  drives:"One asset, two deals"},
+ {n:"Vandelay Industries",gc:8700,atr:87000,st:3,stage:"Stage 3",when:"closes in Q4",
+  ae:"Alex Rivera",need:["asset","Async demo asset"],
+  txt:"Two demos delivered, no async asset for the wider committee. Single-threaded at director level since July.",
+  drives:"Multithreading 1 of 5, your weakest predictor"},
+ {n:"Cyberdyne Systems",gc:5800,atr:159800,st:1,stage:"Stage 1",when:"closes in Q1 FY27",
+  ae:"Sidney Brooks",need:["map","Exec sponsor map"],
+  txt:"Three inbound contacts from one team and no org picture. Sponsor mapping tells you whether this is real.",
+  drives:"Cheapest way to qualify $164K of ATR"},
+ {n:"Wonka Retail",gc:3900,atr:59800,st:2,stage:"Stage 2",when:"closes in Q4",
+  ae:"Skye Tran",need:["study","Benchmark study"],
+  txt:"Competitive benchmark against two named competitors. Buying committee is unmapped, so scope is unbounded.",
+  drives:"Smallest credit for the largest effort"},
+];
+const CENTENE={gc:362000,st:4};
+
+/* ===================== COACHING ===================== */
+const BOXSCORE=[
+ ["EB engaged before Stage 3","Share of deals with a direct EB conversation","36%","55%","31%","Strong","critical","Lagging the patch"],
+ ["Multithreading at close","Avg stakeholders across 2+ functions","2.1","3.4","2.0","Strong","critical","Weakest predictor"],
+ ["Paper Process mapped by Stage 4","Named signature path and legal contact","33%","64%","41%","Strong","critical","Down from Q2"],
+ ["Demo mapped to Decision Criteria","Criteria explicitly addressed in the demo","74%","61%","66%","Moderate","good","Ahead of patch"],
+ ["Commitments closed within 7 days","Promised assets actually delivered","58%","70%","52%","Moderate","warning","Improving, still short"],
+ ["Prep guidance followed","Call goals from the packet actually pursued","78%","n/a","42%","Moderate","good","Up 36 points"],
+ ["Discovery calls before first demo","How long you listen before you show","1.4","2.1","1.3","Moderate","warning","Demoing too early"],
+ ["Time to first value story","Days from Stage 2 to a quantified outcome","31d","24d","29d","Weak","warning","Watch, low signal"]];
+const HEAT_DEALS=["Sesame St","Acme Mutual","Globex","Initech","Hooli","Vandelay"];
+const HEAT=[[4,3,1,2,5,3],[2,3,0,1,4,2],[4,4,2,2,4,3],[3,4,1,1,3,2],[1,2,2,0,2,1],
+ [4,2,1,4,5,3],[5,4,2,3,4,2],[2,4,1,2,3,3],[3,3,1,2,4,1]];
+const LOST=[
+ ["Uncontrollable",4,2,"Budget freeze, reorg or acquisition. Three of four had no warning signal on file."],
+ ["Delayed decision",3,1,"All three had Decision Process at 2 or below when they were lost."],
+ ["Pricing / budget",3,1,"One went to a cheaper vendor. Two had no quantified metric to price against."],
+ ["Relationship depth",2,1,"Both single-threaded. The champion left the company in one case."],
+ ["Unknown",2,2,"Closed-lost with no reason coded. Both by the same AE."],
+ ["Panel / recruitment",1,1,"A specialist B2B panel could not be sourced inside the trial window."]];
+const CALLS=[
+ ["Hooli · discovery","9 Sep","Quantify the churn exposure","Exposure quantified at $3.8M and confirmed by the VP.","good","Followed","Model call. The customer did the arithmetic out loud, which is why it stuck."],
+ ["Vandelay · exec demo","9 Sep","Multithread beyond the director","Two names surfaced, neither followed up.","warning","Partial","Surfacing is not threading. A name without a calendar invite is not a thread."],
+ ["Sesame St · prep call","9 Sep","Confirm Ray, learn what he cares about","Ray confirmed. Dana coached you on his framing.","good","Followed","Well used. Thirty minutes with a champion beat three hours of research."],
+ ["Acme Mutual · security","8 Sep","Close open items live","Two of three closed, third taken away.","warning","Partial","The one taken away is still open, and the block held for it went unused."],
+ ["Initech · AE intro","2 Sep","Listen only, do not position","You positioned the platform for 11 of 30 minutes.","warning","Partial","Understandable, and it cost you the compelling event. Recover it at 11:00."],
+ ["Globex · usage review","26 Aug","Identify the economic buyer","No budget-owner question asked in 45 minutes.","critical","Missed","Third Globex call without the EB question. It is why the deal is Stage 3 at renewal."],
+ ["Wonka · scoping","28 Aug","Map the buying committee","Committee never discussed. Scope grew instead.","critical","Missed","A four-day study for an unmapped committee is unpriced effort."],
+ ["Cyberdyne · inbound triage","21 Aug","Qualify hard before committing SC time","Qualified well. Declined a premature demo.","good","Followed","Exactly right. Saying no to a demo protected three hours and the deal is still alive."]];
+const TREND={weeks:["W27","W28","W29","W30","W31","W32","W33","W34","W35","W36"],
+ meddpicc:[51,49,53,52,56,55,58,57,60,62],adherence:[42,38,47,55,51,63,68,66,74,78]};
+
+/* ===================== HELPERS ===================== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const money=n=>"$"+Math.round(n).toLocaleString("en-US");
+const pc=n=>(n/TARGET*100);
+const hhmm=m=>{const h=Math.floor(m/60),x=m%60,ap=h>=12?"pm":"am";let hh=h%12;
+  if(hh===0)hh=12; return x?`${hh}:${String(x).padStart(2,"0")}${ap}`:`${hh}${ap}`;};
+
+/* ===================== SCHEDULE render ===================== */
+const CAL_START=480,CAL_END=1080,PX=0.92;
+function renderDay(){
+  const d=DAYS[dayIdx];
+  $("#daylabel").textContent=d.label;
+  $("#daycount").textContent=
+    `${d.rel} · ${d.events.length} events · ${d.events.filter(e=>e.kind==="cust").length} customer calls`;
+  $("#dayprev").disabled=dayIdx===0; $("#daynext").disabled=dayIdx===DAYS.length-1;
+  let h=`<div style="position:relative;height:${(CAL_END-CAL_START)*PX}px">`;
+  for(let m=CAL_START;m<=CAL_END;m+=60){
+    const top=(m-CAL_START)*PX;
+    h+=`<div class="hourline" style="top:${top}px"></div>
+        <div class="hourlab" style="top:${top}px">${hhmm(m)}</div>`;
+  }
+  if(d.now) h+=`<div class="nowline" style="top:${(d.now-CAL_START)*PX}px"></div>`;
+  d.events.forEach(e=>{
+    const top=(e.s-CAL_START)*PX, ht=Math.max(e.dur*PX,30);
+    h+=`<button class="calev ${e.kind} ${e.hold?"hold":""}" data-ev="${e.id}"
+        aria-current="${e.id===currentEv}" style="top:${top}px;height:${ht}px">
+      ${e.out?`<span class="dotout ${e.out[0]}">${e.out[1]}</span>`:""}
+      <div class="ct">${hhmm(e.s)} · ${e.dur}m</div>
+      <div class="cn">${e.name}</div>
+      ${ht>52?`<div class="cs">${e.sub}</div>`:""}
+      ${e.flag&&ht>66?`<span class="cflag">${e.flag}</span>`:""}</button>`;
+  });
+  $("#calgrid").innerHTML=h+`</div>`;
+  $$("#calgrid .calev").forEach(b=>b.onclick=()=>selectEvent(b.dataset.ev));
+}
+
+/* ===================== EXECUTION render ===================== */
+function selectEvent(id){
+  currentEv=id;
+  const ev=DAYS[dayIdx].events.find(e=>e.id===id);
+  renderDay(); renderBrief(ev?ev.brief:"centene");
+}
+const slRow=p=>`<div class="sl">
+  <span class="${p.on?"on":"off"}" title="${p.on?"on this call":"not on this call"}"></span>
+  <span class="nm">${p.n}</span>
+  <span class="ti">${p.t}${p.lt?` <em>· ${p.lt}</em>`:""}</span>
+  <span class="rl ${p.cls||""}">${p.role}</span></div>`;
+const ourLine=team=>`<div class="ourline"><span class="k">Ours</span>${
+  team.map(p=>`<span><b>${p.n}</b> ${p.role==="You"?"(you)":"("+p.t.replace(/^(Account Executive|Solutions Consultant|Customer Success Manager)$/,
+    m=>({"Account Executive":"AE","Solutions Consultant":"SC","Customer Success Manager":"CSM"})[m])+")"}</span>`
+  ).join('<span style="color:var(--text-muted)">·</span>')}</div>`;
+
+function letterStrip(b){
+  return b.scores.map((sc,i)=>`<button class="mtile ${sc?"e"+sc:""}" data-m="${i}">
+    <span class="L">${RUBRIC[i].code}</span><span class="S">${sc}</span></button>`).join("");
+}
+function meddpicc(b){
+  const total=b.scores.reduce((a,c)=>a+c,0);
+  const diff=b.prev?total-b.prev.reduce((a,c)=>a+c,0):0;
+  const focus=b.scores.map((s,i)=>[s,i]).sort((a,c)=>a[0]-c[0]||a[1]-c[1]).slice(0,3).map(x=>x[1]);
+  const rows=b.scores.map((sc,i)=>{
+    const r=RUBRIC[i],isF=focus.includes(i);
+    return `<tr class="${isF?"low":""}">
+      <td class="el">${r.el} <span class="code">(${r.code})</span></td>
+      <td><div class="lvl"><span class="n ${sc?"e"+sc:""}">${sc}</span>
+        <span>${LEVELS[sc].icon} ${LEVELS[sc].name}</span></div>
+        <div class="autodesc">${r.desc[sc]}</div></td>
+      <td class="q">${r.q}${isF?`<span class="risk">Blind spot: ${r.risk}</span>`:""}</td>
+      <td>${b.signals[i]}</td><td class="act">${b.actions[i]}</td></tr>`;}).join("");
+  return `<div class="sect">
+    <h4>MEDDPICC assessment <span class="agentic">agentic · Deal Dissection Template</span>
+      <span class="mlegend" style="margin:0 0 0 auto"><span>Weak</span>
+        <span class="steps"><i style="background:var(--ord-0)"></i>
+          <i style="background:var(--ord-1)"></i><i style="background:var(--ord-2)"></i>
+          <i style="background:var(--ord-3)"></i><i style="background:var(--ord-4)"></i>
+          <i style="background:var(--ord-5)"></i></span><span>Strong</span>
+        <span class="mono">${total}/45${diff>0?`, up ${diff} since last touch`:""}</span>
+      </span></h4>
+    <div class="focusband">
+      <h5>Where to focus on this call · the three lowest elements</h5>
+      <ol>${focus.map(i=>
+        `<li><span class="el">${RUBRIC[i].el}</span> at ${b.scores[i]}. ${b.actions[i]}</li>`
+      ).join("")}</ol>
+    </div>
+    <button class="expand" data-expand="ddtable">Show the full assessment, all nine elements</button>
+    <div id="ddtable" hidden>
+      <table class="dd"><colgroup><col style="width:14%"><col style="width:20%">
+        <col style="width:20%"><col style="width:22%"><col style="width:24%"></colgroup>
+        <thead><tr><th>MEDDPICC element</th>
+          <th>Reality Check <span style="text-transform:none;font-weight:400">+ description (auto)</span></th>
+          <th>Strategic briefing question</th><th>Observed deal signals</th>
+          <th>Recommended actions</th></tr></thead><tbody>${rows}</tbody></table>
+    </div></div>`;
+}
+function askPanel(b){
+  return `<div class="sect"><div class="ask">
+    <div class="head"><h5>Ask AI</h5>
+      <select id="askmodel"><option>Claude Opus 5</option><option>GPT-5</option>
+        <option>Gemini 3 Pro</option></select></div>
+    <div class="askbar">
+      <input id="askinput" placeholder="Ask anything about this deal, the stakeholders or the score">
+      <button id="asksend">Ask</button></div>
+    <div class="chips" id="askchips">
+      ${(b.ask||[]).map((a,i)=>`<button class="chip" data-ask="${i}">${a[0]}</button>`).join("")}
+    </div>
+    <div id="askout"></div>
+  </div></div>`;
+}
+function renderBrief(key){
+  const b=BRIEFS[key], el=$("#brief");
+  if(!b){el.innerHTML=`<div class="body">No brief for this event.</div>`;return;}
+
+  if(b.type!=="deal"){
+    const sub=b.type==="recap"?"recap":b.type==="focus"?"focus block":"internal";
+    el.innerHTML=`<header><span class="zone">Execution <span style="font-weight:600;
+        letter-spacing:.04em;text-transform:none;color:var(--text-muted)">· ${sub}</span></span>
+      <span class="cadence">Daily</span>
+      <div class="briefline"><h2>${b.title}</h2><span class="stage">${b.stage}</span>
+        ${b.verdict?`<span class="dotout ${b.verdict[0]}" style="position:static;font-size:10px;
+          padding:2px 7px">${b.verdict[1]}</span>`:""}</div>
+      ${b.facts?`<div class="factstrip">${b.facts.map(([k,v])=>
+        `<div class="fact"><div class="k">${k}</div><div class="v mono">${v}</div></div>`
+      ).join("")}</div>`:""}</header>
+      <div class="sect"><h4>${b.type==="recap"?"What happened, and what it changed":"What to bring"}
+        <span class="agentic">agentic · drafted 6:05am</span></h4>
+        <div style="display:flex;flex-direction:column;gap:9px">${b.lines.map(([k,v])=>
+          `<div class="callout${/cost|gap|honest|still open|do not/i.test(k)?" warn":""}">
+            <span>▸</span><div><b>${k}.</b> ${v}</div></div>`).join("")}</div></div>`;
+    return;
+  }
+
+  el.innerHTML=`<header>
+    <span class="zone">Execution</span><span class="cadence">Daily</span>
+    <div class="briefline"><h2>${b.title}</h2><span class="stage">${b.stage}</span>
+      <span class="meta">prep generated 6:05am ET · ${b.opp}</span></div>
+    <div class="factstrip">${b.facts.map(([k,v])=>
+      `<div class="fact"><div class="k">${k}</div><div class="v mono">${v}</div></div>`
+    ).join("")}</div>
+    <div class="hdrstrip">
+      <div class="mstrip">${letterStrip(b)}</div>
+      <div class="rcbox"><span class="n mono">${b.scores.reduce((a,c)=>a+c,0)}</span>
+        <span class="d">of 45</span>
+        ${b.prev&&b.scores.reduce((a,c)=>a+c,0)-b.prev.reduce((a,c)=>a+c,0)>0
+          ?`<span class="delta">+${b.scores.reduce((a,c)=>a+c,0)-b.prev.reduce((a,c)=>a+c,0)}</span>`:""}</div>
+      <span class="hdrhint">Reality Check. Hover a letter for the rubric wording.</span>
+    </div></header>
+
+  <div class="sect">
+    <h4>Who is on the call
+      <span class="agentic">${b.people.filter(p=>p.on).length} customer · ${b.internal.filter(p=>p.on).length} ours</span>
+      <span style="margin-left:auto;font-size:9.5px;text-transform:none;letter-spacing:0">
+        ● on the call &nbsp; ○ not on it</span></h4>
+    <div class="slist">${b.people.map(slRow).join("")}</div>
+    ${ourLine(b.internal)}
+    <div class="callout warn" style="margin-top:9px"><span>⚠</span><div>${b.alert}</div></div>
+  </div>
+
+  <div class="sect"><div class="cols2">
+    <div><h4 style="font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--text-muted);margin-bottom:8px">What the customer expects to see</h4>
+      <ul class="gl">${b.expects.map(([h,w])=>
+        `<li><span class="ck">▸</span><div><b>${h}</b><span class="why">${w}</span></div></li>`
+      ).join("")}</ul></div>
+    <div><h4 style="font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--text-muted);margin-bottom:8px">Things we have committed to</h4>
+      ${b.commitments.map(([c,src,st])=>`<div class="commit"
+        style="border-left-color:var(--${st})"><div>${st==="critical"?"✕":"✓"} <b>${c}</b></div>
+        <div class="src">${src}</div></div>`).join("")}</div>
+  </div></div>
+
+  ${meddpicc(b)}
+  ${askPanel(b)}`;
+
+  wireBrief(b);
+}
+
+/* ---- Ask AI behaviour ---- */
+function wireBrief(b){
+  $$("[data-expand]").forEach(btn=>btn.onclick=()=>{
+    const t=$("#"+btn.dataset.expand); t.hidden=!t.hidden;
+    btn.textContent=t.hidden?"Show the full assessment, all nine elements"
+      :"Hide the full assessment";});
+  $$(".mtile").forEach(t=>{
+    t.onmousemove=e=>{const i=+t.dataset.m,sc=b.scores[i];
+      showTip(`<div class="tt">${RUBRIC[i].el} (${RUBRIC[i].code})</div>
+        <div class="tr">${LEVELS[sc].icon} ${sc} · ${LEVELS[sc].name}</div>
+        <div class="tr" style="margin-top:4px">${RUBRIC[i].desc[sc]}</div>`,e.clientX,e.clientY);};
+    t.onmouseleave=hideTip;
+    t.onclick=()=>{const d=$("#ddtable");
+      if(d.hidden){$("[data-expand]").click();}
+      d.querySelectorAll("tbody tr")[+t.dataset.m].scrollIntoView({block:"center"});};
+  });
+  const answer=(q,body,src)=>{
+    const model=$("#askmodel").value;
+    $("#askout").innerHTML=`<div class="answer">
+      <div class="qline"><span>▸</span><div>${q}</div></div>
+      <div>${body}</div>
+      <div class="src"><i>${model}</i>${(src||[]).map(s=>`<i>${s}</i>`).join("")}</div></div>`;
+  };
+  $$("[data-ask]").forEach(c=>c.onclick=()=>{
+    const a=b.ask[+c.dataset.ask];
+    $("#askout").innerHTML=`<div class="answer"><div class="thinking">Reading the deal context…</div></div>`;
+    setTimeout(()=>answer(a[0],a[1],a[2]),260);
+  });
+  const send=()=>{
+    const v=$("#askinput").value.trim();
+    if(!v) return;
+    const hit=(b.ask||[]).find(a=>{
+      const w=v.toLowerCase().split(/\W+/).filter(x=>x.length>3);
+      return w.some(x=>a[0].toLowerCase().includes(x));});
+    $("#askout").innerHTML=`<div class="answer"><div class="thinking">Reading the deal context…</div></div>`;
+    setTimeout(()=>{
+      if(hit) answer(hit[0],hit[1],hit[2]);
+      else answer(v,`This is a mockup, so only a few answers are pre-written. Try one of the
+        suggested questions below. In the real cockpit this panel passes the whole deal
+        context to ${$("#askmodel").value}: the Reality Check scores and their rubric
+        wording, the stakeholder map and contact history, open commitments, every prior
+        call recap, and the dashboard figures. It answers against that, and it can write
+        into the assessment's two fill-in columns.`,["mock response"]);
+    },260);
+  };
+  $("#asksend").onclick=send;
+  $("#askinput").onkeydown=e=>{if(e.key==="Enter") send();};
+}
+
+/* ===================== INTELLIGENCE render ===================== */
+function renderForecast(){
+  const shown=OPPS.reduce((a,o)=>a+o.gc,0);
+  const tail=PIPELINE-CENTENE.gc-shown;          // the 4 hidden sub-$2,500 opps
+  const weighted=OPPS.reduce((a,o)=>a+o.gc*STAGE_P[o.st],0)
+    + CENTENE.gc*STAGE_P[CENTENE.st] + tail*STAGE_P[2];
+  const cenW=CENTENE.gc*STAGE_P[CENTENE.st];
+  const best=EARNED+PIPELINE;
+  const likely=EARNED+weighted;
+  const worst=EARNED+34500;                       // only the procedural Stage 4 renewal
+  const max=best;
+  const seg=v=>v/max*100;
+  $("#forecast").innerHTML=`
+    <h5>Where the quarter lands</h5>
+    <div class="fcrow"><span class="lab"><i style="background:var(--ord-5)"></i>Closed to date</span>
+      <span class="amt mono">${money(EARNED)}</span><span class="pc mono">${pc(EARNED).toFixed(1)}%</span></div>
+    <div class="fcrow"><span class="lab"><i style="background:var(--ord-3)"></i>Weighted forecast</span>
+      <span class="amt mono">${money(likely)}</span><span class="pc mono">${pc(likely).toFixed(1)}%</span></div>
+    <div class="fcrow"><span class="lab"><i style="background:var(--ord-1)"></i>Best case, all land</span>
+      <span class="amt mono">${money(best)}</span><span class="pc mono">${pc(best).toFixed(1)}%</span></div>
+    <div class="fcbar" data-fc>
+      <span class="s1" style="width:${seg(EARNED)}%"></span>
+      <span class="s2" style="width:${seg(likely-EARNED)}%"></span>
+      <span class="s3" style="width:${seg(best-likely)}%"></span>
+    </div>
+    <div class="fcmark"><i style="left:${seg(TARGET)}%"></i>
+      <b style="left:${seg(TARGET)}%">100% of $712K plan</b></div>
+    <div class="risknote"><span>⚠</span><div><b>Concentration risk.</b> Sesame St alone is
+      ${money(cenW)} of the ${money(weighted)} weighted forecast, or
+      <b>${(cenW/weighted*100).toFixed(0)}%</b>. If it slips a quarter you land at
+      <b>${pc(likely-cenW).toFixed(1)}%</b>, not ${pc(likely).toFixed(0)}%.</div></div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:7px">
+      Weighted at stage: S1 10%, S2 25%, S3 50%, S4 75%. Worst case, procedural renewals
+      only, is ${pc(worst).toFixed(1)}%.</div>`;
+}
+function renderOpps(){
+  $("#oppqueue").innerHTML=OPPS.map(o=>`<div class="opp">
+    <div class="top"><div class="nm">${o.n}</div>
+      <div class="amt"><b class="mono">${money(o.gc)}</b>
+        <small class="mono">${money(o.atr)} ATR</small></div></div>
+    <div class="sub">${o.stage} · ${o.when} · ${o.ae}</div>
+    <span class="needtag ${o.need[0]}">Needs: ${o.need[1]}</span>
+    <div class="txt">${o.txt}</div>
+    <div class="drives"><span class="pts">+${pc(o.gc).toFixed(1)} pts</span>
+      <span style="color:var(--text-secondary)">to C1 · ${o.drives}</span></div>
+    <div class="act"><button class="mini primary">Build it</button>
+      <button class="mini">Open brief</button></div></div>`).join("");
+  const shown=OPPS.reduce((a,o)=>a+o.gc,0);
+  $("#opptail").textContent=
+    `3 further opps hidden, ${money(PIPELINE-CENTENE.gc-shown)} of credit combined. `+
+    `Sesame St's ${money(CENTENE.gc)} is today's 9:00 meeting.`;
+}
+
+/* ===================== COACHING render ===================== */
+function lostChart(){
+  const m=Math.max(...LOST.map(r=>r[1]));
+  return `<div class="hbars">${LOST.map(([lab,v,s],i)=>`<div class="hbar">
+    <div class="cl">${lab}</div><div class="tr">
+    <div class="fl" style="width:${v/m*100}%;background:var(--series-${s})"
+      data-lost="${i}"></div></div><div class="vl mono">${v}</div></div>`).join("")}</div>
+    <div class="axisfoot"><div class="line"></div>
+      <div class="ticks"><span>0</span><span>${m} losses</span></div></div>`;
+}
+function lostTable(){return `<table class="dtable"><thead><tr><th>Reason</th>
+  <th class="n">Losses</th><th>Class</th></tr></thead><tbody>${LOST.map(([l,v,s])=>
+  `<tr><td>${l}</td><td class="n mono">${v}</td>
+  <td>${s===1?"Controllable":"Uncontrollable / unknown"}</td></tr>`).join("")}</tbody></table>`;}
+function heatmap(){
+  const avgs=HEAT.map(r=>r.reduce((a,c)=>a+c,0)/r.length);
+  let h=`<div class="hm" style="grid-template-columns:168px repeat(${HEAT_DEALS.length},minmax(0,1fr)) 52px">
+    <div></div>${HEAT_DEALS.map(d=>`<div class="ch">${d}</div>`).join("")}<div class="ch">avg</div>`;
+  HEAT.forEach((row,r)=>{
+    h+=`<div class="rl">${RUBRIC[r].el} <span style="color:var(--text-muted)">(${RUBRIC[r].code})</span></div>`;
+    row.forEach((v,c)=>{h+=`<div class="cell ${v?"e"+v:""}" data-hm="${r},${c}"></div>`;});
+    h+=`<div class="avg ${avgs[r]<1.6?"weak":""} mono">${avgs[r].toFixed(1)}</div>`;});
+  const comps=HEAT_DEALS.map((_,c)=>HEAT.reduce((a,row)=>a+row[c],0));
+  h+=`<div class="rl" style="font-weight:650;color:var(--text-primary)">Reality Check / 45</div>
+    ${comps.map(v=>`<div class="avg mono" style="justify-content:center">${v}</div>`).join("")}
+    <div></div></div>`;
+  return h;
+}
+function hmTable(){return `<table class="dtable"><thead><tr><th>Element</th>
+  ${HEAT_DEALS.map(d=>`<th class="n">${d}</th>`).join("")}<th class="n">Avg</th></tr></thead>
+  <tbody>${HEAT.map((row,r)=>`<tr><td>${RUBRIC[r].el}</td>
+  ${row.map(v=>`<td class="n mono">${v}</td>`).join("")}
+  <td class="n mono">${(row.reduce((a,c)=>a+c,0)/row.length).toFixed(1)}</td></tr>`).join("")}
+  </tbody></table>`;}
+const TC={W:520,H:200,pl:34,pr:14,pt:12,pb:24,lo:30,hi:80};
+const tx=i=>TC.pl+((TC.W-TC.pl-TC.pr)*i/(TREND.weeks.length-1));
+const ty=v=>TC.pt+(TC.H-TC.pt-TC.pb)-((TC.H-TC.pt-TC.pb)*(v-TC.lo)/(TC.hi-TC.lo));
+function trendChart(){
+  const path=a=>a.map((v,i)=>`${i?"L":"M"}${tx(i).toFixed(1)},${ty(v).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 ${TC.W} ${TC.H}" width="100%" style="display:block;overflow:visible"
+      role="img" aria-label="MEDDPICC composite and prep adherence by week">
+    ${[30,40,50,60,70,80].map(t=>`<line x1="${TC.pl}" x2="${TC.W-TC.pr}" y1="${ty(t)}"
+      y2="${ty(t)}" stroke="var(--grid)"/><text x="${TC.pl-7}" y="${ty(t)+3.5}"
+      text-anchor="end" font-size="9.5" fill="var(--text-muted)">${t}%</text>`).join("")}
+    <line x1="${TC.pl}" x2="${TC.W-TC.pr}" y1="${ty(30)}" y2="${ty(30)}" stroke="var(--axis)"/>
+    ${TREND.weeks.map((w,i)=>`<text x="${tx(i)}" y="${TC.H-7}" text-anchor="middle"
+      font-size="9.5" fill="var(--text-muted)">${w}</text>`).join("")}
+    <path d="${path(TREND.meddpicc)}" fill="none" stroke="var(--series-1)" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${path(TREND.adherence)}" fill="none" stroke="var(--series-2)" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    ${[["meddpicc","series-1"],["adherence","series-2"]].map(([k,c])=>{
+      const i=TREND[k].length-1,v=TREND[k][i];
+      return `<circle cx="${tx(i)}" cy="${ty(v)}" r="4.5" fill="var(--${c})"
+        stroke="var(--surface-1)" stroke-width="2"/><text x="${tx(i)-6}" y="${ty(v)-9}"
+        text-anchor="end" font-size="11" font-weight="650"
+        fill="var(--text-primary)">${v}%</text>`;}).join("")}
+    <g id="crosshair" style="display:none">
+      <line y1="${TC.pt}" y2="${TC.H-TC.pb}" stroke="var(--axis)"/>
+      <circle r="5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+      <circle r="5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/></g>
+    <rect x="${TC.pl}" y="${TC.pt}" width="${TC.W-TC.pl-TC.pr}" height="${TC.H-TC.pt-TC.pb}"
+      fill="transparent" id="trendhit"/></svg>`;
+}
+function trendTable(){return `<table class="dtable"><thead><tr><th>Week</th>
+  <th class="n">MEDDPICC composite</th><th class="n">Guidance followed</th></tr></thead>
+  <tbody>${TREND.weeks.map((w,i)=>`<tr><td>${w}</td>
+  <td class="n mono">${TREND.meddpicc[i]}%</td>
+  <td class="n mono">${TREND.adherence[i]}%</td></tr>`).join("")}</tbody></table>`;}
+function renderCoach(){
+  // The Coaching tab is a work-in-progress placeholder, so its render targets
+  // do not exist. Everything below (and the BOXSCORE / HEAT / LOST / CALLS /
+  // TREND data above) is parked, not deleted: restore the markup and this
+  // wakes up unchanged.
+  if(!$("#boxscore")) return;
+  $("#boxscore").innerHTML=BOXSCORE.map(([m,s,q,med,q2,corr,st,note])=>`
+    <tr><td class="metric">${m}<small>${s}</small></td><td class="n mono">${q}</td>
+    <td class="n mono" style="color:var(--text-secondary);font-weight:400">${med}</td>
+    <td class="n mono" style="color:var(--text-muted);font-weight:400">${q2}</td>
+    <td style="color:var(--text-secondary)">${corr}</td>
+    <td><span class="statuspill ${st}">${st==="good"?"✓":st==="warning"?"◑":"✕"} ${note}</span></td></tr>`).join("");
+  $("#calltable").innerHTML=CALLS.map(([c,d,g,r,st,v,note])=>`
+    <tr><td><b>${c}</b><br><span class="gv">${d}</span></td><td class="gv">${g}</td>
+    <td>${r}</td><td><span class="statuspill ${st}">${st==="good"?"✓":st==="warning"?"◑":"✕"} ${v}</span></td>
+    <td>${note}</td></tr>`).join("");
+  $("#trendchart").innerHTML=trendChart(); $("#trendtable").innerHTML=trendTable();
+  $("#lostchart").innerHTML=lostChart(); $("#losttable").innerHTML=lostTable();
+  $("#heatmap").innerHTML=heatmap(); $("#hmtable").innerHTML=hmTable();
+  wireCoach();
+}
+
+/* ===================== TOOLTIPS ===================== */
+function showTip(html,x,y){
+  const t=$("#tip"); t.innerHTML=html; t.classList.add("on");
+  const r=t.getBoundingClientRect();
+  t.style.left=Math.min(x+12,innerWidth-r.width-10)+"px";
+  t.style.top=Math.max(y-r.height-10,8)+"px";
+}
+const hideTip=()=>$("#tip").classList.remove("on");
+function wireCoach(){
+  $$("[data-lost]").forEach(el=>{
+    el.onmousemove=e=>{const [lab,v,s,why]=LOST[+el.dataset.lost];
+      showTip(`<div class="tt">${lab}</div><div class="tr">
+        <i style="background:var(--series-${s})"></i>
+        ${s===1?"Controllable":"Uncontrollable / unknown"}<b>${v}</b></div>
+        <div class="tr" style="margin-top:4px">${why}</div>`,e.clientX,e.clientY);};
+    el.onmouseleave=hideTip;});
+  $$("[data-hm]").forEach(el=>{
+    el.onmousemove=e=>{const [r,c]=el.dataset.hm.split(",").map(Number),v=HEAT[r][c];
+      showTip(`<div class="tt">${HEAT_DEALS[c]}</div>
+        <div class="tr">${RUBRIC[r].el}<b>${v} ${LEVELS[v].name}</b></div>
+        <div class="tr" style="margin-top:4px">${RUBRIC[r].desc[v]}</div>`,e.clientX,e.clientY);};
+    el.onmouseleave=hideTip;});
+  const svg=$("#trendchart svg");
+  if(svg){const hit=$("#trendhit"),ch=$("#crosshair");
+    hit.onmousemove=e=>{
+      const bb=svg.getBoundingClientRect(),px=(e.clientX-bb.left)/bb.width*TC.W;
+      let i=Math.round((px-TC.pl)/(TC.W-TC.pl-TC.pr)*(TREND.weeks.length-1));
+      i=Math.max(0,Math.min(TREND.weeks.length-1,i));
+      ch.style.display="block";
+      const ln=ch.querySelector("line"); ln.setAttribute("x1",tx(i)); ln.setAttribute("x2",tx(i));
+      const cs=ch.querySelectorAll("circle");
+      cs[0].setAttribute("cx",tx(i)); cs[0].setAttribute("cy",ty(TREND.meddpicc[i]));
+      cs[1].setAttribute("cx",tx(i)); cs[1].setAttribute("cy",ty(TREND.adherence[i]));
+      showTip(`<div class="tt">${TREND.weeks[i]}</div>
+        <div class="tr"><i style="background:var(--series-1)"></i>MEDDPICC composite<b>${TREND.meddpicc[i]}%</b></div>
+        <div class="tr"><i style="background:var(--series-2)"></i>Guidance followed<b>${TREND.adherence[i]}%</b></div>`,
+        e.clientX,e.clientY);};
+    hit.onmouseleave=()=>{ch.style.display="none";hideTip();};}
+  $$("[data-table]").forEach(b=>b.onclick=()=>{
+    const el=$("#"+b.dataset.table); el.hidden=!el.hidden;
+    b.textContent=el.hidden?"Table":"Hide table";});
+}
+function wireMeters(){
+  const M={c1:["C1 Individual growth credit","$441,904 of $712,000","62% attained · weight 45%"],
+    c2:["C2 Team growth credit","$2.3M of $4.2M","55% attained · weight 45%"],
+    c3:["C3 Region renewal rate","66% actual against a 70% target","weight 10%"]};
+  $$("[data-meter]").forEach(el=>{
+    el.onmousemove=e=>{const [t,a,b]=M[el.dataset.meter];
+      showTip(`<div class="tt">${t}</div><div class="tr">${a}</div>
+        <div class="tr">${b}</div>`,e.clientX,e.clientY);};
+    el.onmouseleave=hideTip;});
+}
+
+/* ===================== WIRING ===================== */
+$("#dayprev").onclick=()=>{if(dayIdx>0){dayIdx--;jumpFirst();}};
+$("#daynext").onclick=()=>{if(dayIdx<DAYS.length-1){dayIdx++;jumpFirst();}};
+function jumpFirst(){const d=DAYS[dayIdx];
+  selectEvent((d.events.find(e=>e.kind==="cust")||d.events[0]).id);}
+$$(".tab").forEach(t=>t.onclick=()=>{
+  $$(".tab").forEach(o=>o.setAttribute("aria-selected",o===t));
+  const coach=t.dataset.view==="coach";
+  $("#view-today").hidden=coach; $("#view-coach").hidden=!coach; hideTip();});
+$("#aboutbtn").onclick=()=>{$("#aboutmodal").hidden=false;};
+$("#aboutclose").onclick=()=>{$("#aboutmodal").hidden=true;};
+$("#aboutmodal").onclick=e=>{if(e.target.id==="aboutmodal")$("#aboutmodal").hidden=true;};
+$("#themebtn").onclick=()=>{document.documentElement.dataset.theme=
+  document.documentElement.dataset.theme==="dark"?"light":"dark";};
+
+renderDay(); renderBrief("centene"); renderForecast(); renderOpps(); renderCoach(); wireMeters();
+</script>
+</body>
+</html>
