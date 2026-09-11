@@ -252,7 +252,11 @@ button{cursor:pointer}
 .rcbox{display:flex;align-items:baseline;gap:8px}
 .rcbox .n{font-size:22px;font-weight:680;letter-spacing:-.02em}
 .rcbox .d{font-size:10.5px;color:var(--text-secondary)}
-.rcbox .delta{font-size:10.5px;font-weight:650;color:var(--delta-good)}
+/* the +N chip is interactive: hovering it explains what moved and why */
+.rcbox button.delta{font-size:10.5px;font-weight:700;color:var(--delta-good);
+  border:1px solid var(--delta-good);background:transparent;border-radius:999px;
+  padding:1px 7px;line-height:1.3;cursor:help}
+.rcbox button.delta:hover{background:var(--delta-good);color:var(--surface-1)}
 .mlegend{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--text-muted);
   margin-top:8px;flex-wrap:wrap}
 .mlegend .steps{display:flex;gap:2px}
@@ -492,7 +496,7 @@ button{cursor:pointer}
         <label>Quarter
           <select><option>Q3, 2026</option><option>Q2, 2026</option></select></label>
       </div>
-      <span class="src">SC Achievement Dashboard · synced 6:04am ET</span>
+      <span class="src">SC Achievement Dashboard · Tableau · synced 6:04am ET</span>
     </div>
     <div class="kpigrid">
       <div class="tile"><div class="lbl">Individual growth credit</div>
@@ -722,6 +726,7 @@ let dayIdx=1, currentEv="centene";
 const BRIEFS={
 centene:{type:"deal",title:"Sesame Street Inc. · Executive readout",stage:"Stage 4 · Selected",
  opp:"SesameSt-Renewal-USD",
+ touch:"30 minute prep call with Dana Winters, 9 Sep",
  facts:[["ATR","$910,000"],["Growth credit","$362,000"],["Renewal","30 Sep <small>· 20 days</small>"],
   ["Days in stage","34"],["AE","Alex Rivera"],["Last touch","yesterday"]],
  people:[
@@ -769,7 +774,7 @@ centene:{type:"deal",title:"Sesame Street Inc. · Executive readout",stage:"Stag
   ["Why is Paper Process only a 1?","Because nothing in the record gets past 'aware that contracts and legal are involved', which is exactly the rubric's level 1. Three specifics are missing: no named legal or procurement contact, no review duration, and no signature owner. Mo Bell is the only procurement name on the account and he has zero touches and is not on today's invite. With 20 days to the renewal date and a patch average paper cycle of 24 days, this is the element most likely to cost you the quarter, not the value conversation.",
    ["Reality Check rubric, level 1","Salesforce contact history","Renewal date 30 Sep"]],
   ["What changed since the last call?","Two things, both from yesterday's 30 minute prep call with Dana. Competition moved 1 to 2 because Dana told you Ray opens every review with cost per unit of outcome, so you now understand how the buyer evaluates rather than just knowing Pixelgraph exists. Implication of Pain moved 3 to 4 because the retention link was confirmed as board-visible. Composite went 26 to 28. Nothing else moved, and Paper Process has been stuck at 1 for 34 days.",
-   ["Call recap, 9 Sep","Reality Check history"]],
+   ["Bluedot recap, 9 Sep","Reality Check history"]],
   ["Who else should be on this call?","Mo Bell, procurement. He is the only mapped route to the paper process and he has never been contacted. The counter-argument is that adding procurement to an executive readout signals you are closing before Ray has bought in, so the better move is to ask Dana on this call for permission to bring Mo into a separate 15 minute mechanics conversation this week. Chris Lange is already on the invite but unowned, which is a different problem: he needs a job, not an introduction.",
    ["Stakeholder map","Multithreading score 3"]],
   ["Draft the follow-up email","Held until after the call, deliberately. The follow-up that matters depends on whether Ray names his metric. If he does, the email restates it in his words and attaches the accessibility read-out. If he does not, the email should ask for it directly rather than paper over the gap. Ask again when the recap lands and this will draft both versions against what actually happened.",
@@ -777,6 +782,7 @@ centene:{type:"deal",title:"Sesame Street Inc. · Executive readout",stage:"Stag
 
 sentry:{type:"deal",title:"Acme Mutual · Security & procurement review",stage:"Stage 4 · Selected",
  opp:"AcmeMutual-Renewal-USD",
+ touch:"Security questionnaire thread with Tomas Lind, 8 Sep",
  facts:[["ATR","$46,800"],["Growth credit","$34,500"],["Renewal","15 Sep <small>· 5 days</small>"],
   ["Days in stage","22"],["AE","Alex Rivera"],["Last touch","8 Sep"]],
  people:[
@@ -824,6 +830,7 @@ sentry:{type:"deal",title:"Acme Mutual · Security & procurement review",stage:"
 
 molina:{type:"deal",title:"Initech · Discovery",stage:"Stage 2 · Develop",
  opp:"Initech-NewLogo-USD",
+ touch:"AE intro call with Sidney Brooks, 2 Sep",
  facts:[["ATR","$195,000"],["Growth credit","$17,600"],["Target close","18 Dec"],
   ["Days in stage","11"],["AE","Sidney Brooks"],["Last touch","2 Sep"]],
  people:[
@@ -868,6 +875,7 @@ molina:{type:"deal",title:"Initech · Discovery",stage:"Stage 2 · Develop",
 
 clickup:{type:"deal",title:"Globex · Renewal value review",stage:"Stage 3 · Prove",
  opp:"Globex-Renewal-USD-113160",
+ touch:"Usage review with Jamie Rowe, 26 Aug",
  facts:[["ATR","$74,500"],["Growth credit","$31,200"],["Renewal","13 Sep <small>· 3 days</small>"],
   ["Days in stage","61"],["AE","Skye Tran"],["Last touch","26 Aug"]],
  people:[
@@ -960,7 +968,7 @@ clickup:{type:"deal",title:"Globex · Renewal value review",stage:"Stage 3 · Pr
  ["If Thursday lands","This is the demo scoping call. Bring the Sesame St accessibility readout as the reference artifact."],
  ["If it does not","Release the hold and give the slot to the Globex expansion case, currently unclaimed at 1:00."]]},
 "i-grainger2":{type:"internal",title:"Vandelay · Committee async review",stage:"Customer async · 30m",lines:[
- ["What this is","An async video walkthrough for the wider buying committee. The asset does not exist yet. Three hours of build, unbooked."],
+ ["What this is","An async Consensus review for the wider buying committee. The asset does not exist yet. Three hours of build, unbooked."],
  ["Who should be on it","Pia Mendez in design ops and the unnamed finance contact from yesterday. Both surfaced, neither threaded."],
  ["The play","Use the asset as the reason for the introduction, so Alex asks a favour on your behalf rather than making a cold ask."]]},
 "i-q4build":{type:"internal",title:"Q4 pipeline build with Alex Rivera",stage:"Internal · 60m",lines:[
@@ -1005,7 +1013,7 @@ const OPPS=[
   txt:"retention pressure mirrors Sesame St exactly. The readout built at 1:00 today is most of the way to a Hooli asset.",
   drives:"One asset, two deals"},
  {n:"Vandelay Industries",gc:8700,atr:87000,st:3,stage:"Stage 3",when:"closes in Q4",
-  ae:"Alex Rivera",need:["asset","Async demo asset"],
+  ae:"Alex Rivera",need:["asset","Consensus asset"],
   txt:"Two demos delivered, no async asset for the wider committee. Single-threaded at director level since July.",
   drives:"Multithreading 1 of 5, your weakest predictor"},
  {n:"Cyberdyne Systems",gc:5800,atr:159800,st:1,stage:"Stage 1",when:"closes in Q1 FY27",
@@ -1108,8 +1116,6 @@ function letterStrip(b){
     <span class="L">${RUBRIC[i].code}</span><span class="S">${sc}</span></button>`).join("");
 }
 function meddpicc(b){
-  const total=b.scores.reduce((a,c)=>a+c,0);
-  const diff=b.prev?total-b.prev.reduce((a,c)=>a+c,0):0;
   const focus=b.scores.map((s,i)=>[s,i]).sort((a,c)=>a[0]-c[0]||a[1]-c[1]).slice(0,3).map(x=>x[1]);
   const rows=b.scores.map((sc,i)=>{
     const r=RUBRIC[i],isF=focus.includes(i);
@@ -1121,14 +1127,6 @@ function meddpicc(b){
       <td class="q">${r.q}${isF?`<span class="risk">Blind spot: ${r.risk}</span>`:""}</td>
       <td>${b.signals[i]}</td><td class="act">${b.actions[i]}</td></tr>`;}).join("");
   return `<div class="sect">
-    <h4>MEDDPICC assessment <span class="agentic">agentic · Deal Dissection Template</span>
-      <span class="mlegend" style="margin:0 0 0 auto"><span>Weak</span>
-        <span class="steps"><i style="background:var(--ord-0)"></i>
-          <i style="background:var(--ord-1)"></i><i style="background:var(--ord-2)"></i>
-          <i style="background:var(--ord-3)"></i><i style="background:var(--ord-4)"></i>
-          <i style="background:var(--ord-5)"></i></span><span>Strong</span>
-        <span class="mono">${total}/45${diff>0?`, up ${diff} since last touch`:""}</span>
-      </span></h4>
     <div class="focusband">
       <h5>Where to focus on this call · the three lowest elements</h5>
       <ol>${focus.map(i=>
@@ -1194,8 +1192,9 @@ function renderBrief(key){
       <div class="rcbox"><span class="n mono">${b.scores.reduce((a,c)=>a+c,0)}</span>
         <span class="d">of 45</span>
         ${b.prev&&b.scores.reduce((a,c)=>a+c,0)-b.prev.reduce((a,c)=>a+c,0)>0
-          ?`<span class="delta">+${b.scores.reduce((a,c)=>a+c,0)-b.prev.reduce((a,c)=>a+c,0)}</span>`:""}</div>
-      <span class="hdrhint">Reality Check. Hover a letter for the rubric wording.</span>
+          ?`<button class="delta" data-delta>+${b.scores.reduce((a,c)=>a+c,0)-b.prev.reduce((a,c)=>a+c,0)}</button>`:""}</div>
+      <span class="hdrhint">Reality Check, scored against the Deal Dissection Template.
+        Hover a letter, or the change, for detail.</span>
     </div></header>
 
   <div class="sect">
@@ -1233,6 +1232,26 @@ function wireBrief(b){
     const t=$("#"+btn.dataset.expand); t.hidden=!t.hidden;
     btn.textContent=t.hidden?"Show the full assessment, all nine elements"
       :"Hide the full assessment";});
+  // the +N chip: which elements moved, and what moved them
+  const dEl=$("[data-delta]");
+  if(dEl && b.prev){
+    const moved=b.scores.map((sc,i)=>[i,b.prev[i],sc]).filter(([,p,s])=>s!==p);
+    const total=b.scores.reduce((a,c)=>a+c,0);
+    const diff=total-b.prev.reduce((a,c)=>a+c,0);
+    const show=moved.slice(0,6), rest=moved.length-show.length;
+    const html=`<div class="tt">Up ${diff} since last touch</div>
+      ${show.map(([i,p,s])=>`<div class="tr"><i style="background:var(--ord-${s})"></i>
+        ${RUBRIC[i].el}<b>${p} &rarr; ${s}</b></div>`).join("")}
+      ${rest>0?`<div class="tr" style="margin-top:3px">and ${rest} more</div>`:""}
+      <div class="tr" style="margin-top:6px;padding-top:5px;
+        border-top:1px solid var(--grid);display:block">
+        From: ${b.touch||"the last logged interaction"}</div>
+      <div class="tr" style="display:block;color:var(--text-muted)">
+        Now at ${total} of 45.</div>`;
+    dEl.onmousemove=e=>showTip(html,e.clientX,e.clientY);
+    dEl.onmouseleave=hideTip;
+    dEl.onclick=e=>showTip(html,e.clientX,e.clientY);
+  }
   $$(".mtile").forEach(t=>{
     t.onmousemove=e=>{const i=+t.dataset.m,sc=b.scores[i];
       showTip(`<div class="tt">${RUBRIC[i].el} (${RUBRIC[i].code})</div>
